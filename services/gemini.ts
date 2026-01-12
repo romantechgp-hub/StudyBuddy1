@@ -1,8 +1,8 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
 
-// Helper function to get AI instance
-const getAI = () => new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+// Initialize AI exclusively using process.env.API_KEY as per guidelines
+const getAI = () => new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 export const studyService = {
   async explainTopic(topic: string, level: 'basic' | 'standard') {
@@ -18,7 +18,7 @@ export const studyService = {
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      contents: prompt,
     });
     return response.text;
   },
@@ -44,7 +44,7 @@ export const studyService = {
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: [{ role: 'user', parts: [imagePart, textPart] }],
+      contents: { parts: [imagePart, textPart] },
     });
     return response.text;
   },
@@ -58,15 +58,14 @@ export const studyService = {
     
     CRITICAL RULES for Math Formatting:
     - Use standard math symbols only (+, -, ×, ÷, =, √, ^).
-    - Do NOT use words like "gun", "vag", "jog" inside formulas. Use the symbols instead.
-    - Do NOT wrap any text or formula in dollar signs ($) or double dollar signs ($$).
-    - Keep formula lines clean and separate from descriptive text.
-    - Use letters/variables (like x, y, a, b) for formulas clearly.
+    - Do NOT wrap any text or formula in dollar signs ($).
+    - Keep formula lines clean.
     - The output must be plain text without any LaTeX markers.`;
 
+    // Using gemini-3-pro-preview for math tasks as recommended
     const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      model: 'gemini-3-pro-preview',
+      contents: prompt,
     });
     
     return response.text?.replace(/\$/g, '') || '';
@@ -84,20 +83,12 @@ export const studyService = {
       text: `Analyze the math problem in this image and solve it. 
       Format the output strictly as follows:
       1. Provide the Final Answer first.
-      2. Provide Step-by-step explanation in Bengali.
-      
-      CRITICAL RULES for Math Formatting:
-      - Use standard math symbols only (+, -, ×, ÷, =, √, ^).
-      - Do NOT use words like "gun", "vag", "jog" inside formulas. Use the symbols instead.
-      - Do NOT wrap any text or formula in dollar signs ($) or double dollar signs ($$).
-      - Keep formula lines clean and separate from descriptive text.
-      - Use letters/variables (like x, y, a, b) for formulas clearly.
-      - The output must be plain text without any LaTeX markers.`,
+      2. Provide Step-by-step explanation in Bengali.`,
     };
 
     const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: [{ role: 'user', parts: [imagePart, textPart] }],
+      model: 'gemini-3-pro-preview',
+      contents: { parts: [imagePart, textPart] },
     });
     return response.text?.replace(/\$/g, '') || '';
   },
@@ -108,15 +99,11 @@ export const studyService = {
     const toLang = direction === 'bn-en' ? 'English' : 'Bengali';
     
     const prompt = `Translate this ${fromLang} text to ${toLang}: "${text}".
-    Act like a friendly teacher.
-    Provide the output in JSON format with these fields:
-    - translation: The translated sentence.
-    - pronunciation: A simple Bengali guide to pronounce the translated sentence.
-    - explanation: A short "teacher-like" explanation in Bengali about the sentence structure or word meanings.`;
+    Provide the output in JSON format with fields: translation, pronunciation, explanation.`;
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      contents: prompt,
       config: {
         responseMimeType: "application/json",
         responseSchema: {
@@ -125,7 +112,8 @@ export const studyService = {
             translation: { type: Type.STRING },
             pronunciation: { type: Type.STRING },
             explanation: { type: Type.STRING }
-          }
+          },
+          required: ["translation", "pronunciation", "explanation"]
         }
       }
     });
@@ -144,17 +132,13 @@ export const studyService = {
       },
     };
     const textPart = {
-      text: `Detect the ${fromLang} text in this image and translate it to ${toLang}.
-      Act like a friendly teacher.
-      Provide the output in JSON format with these fields:
-      - translation: The translated sentence.
-      - pronunciation: A simple Bengali guide to pronounce the translated sentence.
-      - explanation: A short "teacher-like" explanation in Bengali about the sentence structure or word meanings.`,
+      text: `Detect the ${fromLang} text in this image and translate it to ${toLang}. 
+      Provide JSON with translation, pronunciation, and explanation.`,
     };
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: [{ role: 'user', parts: [imagePart, textPart] }],
+      contents: { parts: [imagePart, textPart] },
       config: {
         responseMimeType: "application/json",
         responseSchema: {
@@ -163,7 +147,8 @@ export const studyService = {
             translation: { type: Type.STRING },
             pronunciation: { type: Type.STRING },
             explanation: { type: Type.STRING }
-          }
+          },
+          required: ["translation", "pronunciation", "explanation"]
         }
       }
     });
@@ -173,28 +158,23 @@ export const studyService = {
   async generateScript(topic: string, language: 'bn' | 'en') {
     const ai = getAI();
     const langName = language === 'bn' ? 'Bengali' : 'English';
-    const prompt = `Write a creative and useful script about the topic: "${topic}" in ${langName}. 
-    The script could be for a video, a presentation, or a short play. 
-    Format it nicely with headings. If in Bengali, use clear and standard language.`;
+    const prompt = `Write a creative script about the topic: "${topic}" in ${langName}.`;
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      contents: prompt,
     });
     return response.text;
   },
 
   async validateEnglishSentence(sentence: string) {
     const ai = getAI();
-    const prompt = `Check if this is a correct and meaningful English sentence: "${sentence}".
-    Respond with a JSON object:
-    - isValid: true or false.
-    - correction: If invalid, provide the corrected version.
-    - feedback: A very short encouragement in Bengali.`;
+    const prompt = `Check if this is a correct English sentence: "${sentence}".
+    Respond with JSON: isValid, correction, feedback.`;
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      contents: prompt,
       config: {
         responseMimeType: "application/json",
         responseSchema: {
@@ -212,16 +192,12 @@ export const studyService = {
 
   async checkSpelling(text: string, language: 'bn' | 'en') {
     const ai = getAI();
-    const prompt = `Check the spelling and grammar of the following ${language === 'bn' ? 'Bengali' : 'English'} text: "${text}".
-    Provide the output in JSON format:
-    - original: The original text provided.
-    - corrected: The corrected text.
-    - differences: A short list of what was corrected in Bengali.
-    - explanation: A very simple explanation of the rules in Bengali.`;
+    const prompt = `Check spelling of this ${language === 'bn' ? 'Bengali' : 'English'} text: "${text}".
+    Respond with JSON: original, corrected, differences, explanation.`;
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      contents: prompt,
       config: {
         responseMimeType: "application/json",
         responseSchema: {
@@ -247,17 +223,12 @@ export const studyService = {
       },
     };
     const textPart = {
-      text: `Detect the ${language === 'bn' ? 'Bengali' : 'English'} text in this image and check its spelling and grammar.
-      Provide the output in JSON format:
-      - original: The text detected in the image.
-      - corrected: The corrected text.
-      - differences: A short list of what was corrected in Bengali.
-      - explanation: A very simple explanation of the rules in Bengali.`,
+      text: `Detect the ${language === 'bn' ? 'Bengali' : 'English'} text and check spelling. JSON: original, corrected, differences, explanation.`,
     };
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: [{ role: 'user', parts: [imagePart, textPart] }],
+      contents: { parts: [imagePart, textPart] },
       config: {
         responseMimeType: "application/json",
         responseSchema: {
@@ -278,7 +249,7 @@ export const studyService = {
     const ai = getAI();
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: [{ role: 'user', parts: [{ text: `Answer this question in Bengali: "${question}". Be concise and helpful.` }] }],
+      contents: `Answer this in Bengali: "${question}".`,
     });
     return response.text;
   },
@@ -292,12 +263,12 @@ export const studyService = {
       },
     };
     const textPart = {
-      text: `Identify the question or information in this image and answer it concisely and helpfully in Bengali.`,
+      text: `Analyze this image and answer in Bengali.`,
     };
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: [{ role: 'user', parts: [imagePart, textPart] }],
+      contents: { parts: [imagePart, textPart] },
     });
     return response.text;
   },
@@ -305,42 +276,17 @@ export const studyService = {
   async chatWithFriend(history: { role: 'user' | 'model', parts: { text: string }[] }[], message: string) {
     const ai = getAI();
     const saved = localStorage.getItem('global_settings');
-    let instruction = `You are Roman, a friendly AI English tutor for Bengali students. Your goal is to help them speak English naturally while teaching them through their mistakes.
-
-CORE RULES:
-1. ALWAYS act like a close, encouraging friend. Use "তুমি" in Bengali.
-2. MISTAKE DETECTION: If the student makes ANY English mistake:
-   - Start with a "Learning Moment" in BENGALI using "💡 Roman's Tip (শিখিয়ে দিচ্ছি):".
-   - Explain simply and show the correction.
-3. DUAL LANGUAGE CONVERSATION: For every English sentence you write in your response, you MUST follow it with its BENGALI translation. 
-   Format:
-   [English Sentence]
-   ([বাংলা অনুবাদ])
-   
-   Example:
-   That's a great idea!
-   (এটা খুব চমৎকার একটা বুদ্ধি!)
-   
-   What did you eat for lunch today?
-   (আজ দুপুরে তুমি কী খেয়েছ?)
-
-4. If no mistake is found, just continue the dual-language conversation.
-5. If user speaks in Bengali, reply in dual-language (English + Bengali translation).
-
-Tone: Fun, helpful, and kind. Use emojis!`;
+    let instruction = `You are Roman, a friendly AI English tutor for Bengali students. 
+    Explain mistakes simply in Bengali. For every English sentence, provide Bengali translation in brackets.`;
     
     if (saved) {
       const parsed = JSON.parse(saved);
-      if (parsed.aiSystemInstruction) {
-        instruction = parsed.aiSystemInstruction;
-      }
+      if (parsed.aiSystemInstruction) instruction = parsed.aiSystemInstruction;
     }
 
     const chat = ai.chats.create({
       model: 'gemini-3-flash-preview',
-      config: {
-        systemInstruction: instruction,
-      },
+      config: { systemInstruction: instruction },
       history: history,
     });
 
