@@ -53,18 +53,17 @@ const App: React.FC = () => {
   useEffect(() => {
     loadUserFromStorage();
     
-    // Initial view setup based on session
+    // Initial view set and push initial history state
     const session = localStorage.getItem('studybuddy_session_id');
     const startView = session ? View.HOME : View.LOGIN;
     setCurrentView(startView);
     window.history.replaceState({ view: startView }, '', '');
 
-    // Handle back/forward button clicks
+    // Handle back button clicks
     const handlePopState = (event: PopStateEvent) => {
       if (event.state && event.state.view) {
         setCurrentView(event.state.view);
       } else {
-        // Default to safe view if state is missing
         const session = localStorage.getItem('studybuddy_session_id');
         setCurrentView(session ? View.HOME : View.LOGIN);
       }

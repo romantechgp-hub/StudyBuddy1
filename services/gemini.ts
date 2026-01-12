@@ -2,7 +2,7 @@
 import { GoogleGenAI, Type } from "@google/genai";
 
 // Helper function to get AI instance
-const getAI = () => new GoogleGenAI({ apiKey: process.env.API_KEY });
+const getAI = () => new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
 
 export const studyService = {
   async explainTopic(topic: string, level: 'basic' | 'standard') {
@@ -18,7 +18,7 @@ export const studyService = {
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: prompt,
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
     });
     return response.text;
   },
@@ -44,7 +44,7 @@ export const studyService = {
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: { parts: [imagePart, textPart] },
+      contents: [{ role: 'user', parts: [imagePart, textPart] }],
     });
     return response.text;
   },
@@ -66,7 +66,7 @@ export const studyService = {
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: prompt,
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
     });
     
     return response.text?.replace(/\$/g, '') || '';
@@ -97,7 +97,7 @@ export const studyService = {
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: { parts: [imagePart, textPart] },
+      contents: [{ role: 'user', parts: [imagePart, textPart] }],
     });
     return response.text?.replace(/\$/g, '') || '';
   },
@@ -116,7 +116,7 @@ export const studyService = {
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: prompt,
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
       config: {
         responseMimeType: "application/json",
         responseSchema: {
@@ -154,7 +154,7 @@ export const studyService = {
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: { parts: [imagePart, textPart] },
+      contents: [{ role: 'user', parts: [imagePart, textPart] }],
       config: {
         responseMimeType: "application/json",
         responseSchema: {
@@ -179,7 +179,7 @@ export const studyService = {
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: prompt,
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
     });
     return response.text;
   },
@@ -194,7 +194,7 @@ export const studyService = {
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: prompt,
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
       config: {
         responseMimeType: "application/json",
         responseSchema: {
@@ -221,7 +221,7 @@ export const studyService = {
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: prompt,
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
       config: {
         responseMimeType: "application/json",
         responseSchema: {
@@ -257,7 +257,7 @@ export const studyService = {
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: { parts: [imagePart, textPart] },
+      contents: [{ role: 'user', parts: [imagePart, textPart] }],
       config: {
         responseMimeType: "application/json",
         responseSchema: {
@@ -278,7 +278,7 @@ export const studyService = {
     const ai = getAI();
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `Answer this question in Bengali: "${question}". Be concise and helpful.`,
+      contents: [{ role: 'user', parts: [{ text: `Answer this question in Bengali: "${question}". Be concise and helpful.` }] }],
     });
     return response.text;
   },
@@ -297,7 +297,7 @@ export const studyService = {
 
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: { parts: [imagePart, textPart] },
+      contents: [{ role: 'user', parts: [imagePart, textPart] }],
     });
     return response.text;
   },
