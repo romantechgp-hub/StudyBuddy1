@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { View, UserProfile } from './types';
 import Header from './components/Header';
@@ -23,7 +22,6 @@ const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>(View.LOGIN);
   const [user, setUser] = useState<UserProfile | null>(null);
 
-  // Custom Navigation function to handle History API
   const navigateTo = (newView: View, replace: boolean = false) => {
     if (replace) {
       window.history.replaceState({ view: newView }, '', '');
@@ -42,7 +40,7 @@ const App: React.FC = () => {
       if (currentUser) {
         if (currentUser.isBlocked) {
           handleLogout();
-          alert('আপনার অ্যাকাউন্টটি ব্লক করা হয়েছে। অনুগ্রহ করে অ্যাডমিনের সাথে যোগাযোগ করুন।');
+          alert('আপনার অ্যাকাউন্টটি ব্লক করা হয়েছে।');
         } else {
           setUser(currentUser);
         }
@@ -53,13 +51,11 @@ const App: React.FC = () => {
   useEffect(() => {
     loadUserFromStorage();
     
-    // Initial view set and push initial history state
     const session = localStorage.getItem('studybuddy_session_id');
     const startView = session ? View.HOME : View.LOGIN;
     setCurrentView(startView);
     window.history.replaceState({ view: startView }, '', '');
 
-    // Handle back button clicks
     const handlePopState = (event: PopStateEvent) => {
       if (event.state && event.state.view) {
         setCurrentView(event.state.view);
@@ -70,18 +66,13 @@ const App: React.FC = () => {
     };
 
     window.addEventListener('popstate', handlePopState);
-
-    const handleStorageChange = () => {
-      loadUserFromStorage();
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('local-storage-update', handleStorageChange);
+    window.addEventListener('storage', loadUserFromStorage);
+    window.addEventListener('local-storage-update', loadUserFromStorage);
     
     return () => {
       window.removeEventListener('popstate', handlePopState);
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('local-storage-update', handleStorageChange);
+      window.removeEventListener('storage', loadUserFromStorage);
+      window.removeEventListener('local-storage-update', loadUserFromStorage);
     };
   }, []);
 
@@ -103,36 +94,29 @@ const App: React.FC = () => {
     localStorage.removeItem('studybuddy_session_id');
     setUser(null);
     navigateTo(View.LOGIN, true);
+    window.dispatchEvent(new CustomEvent('local-storage-update'));
   };
 
   const handleLogin = (id: string, pass: string): string | null => {
     const usersRaw = localStorage.getItem('studybuddy_registered_users');
-    if (!usersRaw) return 'কোনো অ্যাকাউন্ট পাওয়া যায়নি। প্রথমে রেজিস্ট্রেশন করুন।';
-    
+    if (!usersRaw) return 'অ্যাকাউন্ট পাওয়া যায়নি। রেজিস্ট্রেশন করুন।';
     const users: UserProfile[] = JSON.parse(usersRaw);
     const found = users.find(u => u.id === id);
-    
-    if (!found) return 'ইউজার আইডি খুঁজে পাওয়া যায়নি।';
-    if (found.password !== pass) return 'সঠিক পাসওয়ার্ড ব্যবহার করুন।';
-    if (found.isBlocked) return 'আপনার অ্যাকাউন্টটি ব্লক করা হয়েছে।';
-    
+    if (!found) return 'ইউজার আইডি ভুল।';
+    if (found.password !== pass) return 'পাসওয়ার্ড ভুল।';
+    if (found.isBlocked) return 'অ্যাকাউন্টটি ব্লক করা হয়েছে।';
     setUser(found);
     localStorage.setItem('studybuddy_session_id', found.id);
     navigateTo(View.HOME, true);
+    window.dispatchEvent(new CustomEvent('local-storage-update'));
     return null;
   };
 
   const handleRegister = (name: string, id: string, email: string, pass: string, image?: string) => {
     const newUser: UserProfile = {
-      id: id,
-      email: email || undefined,
-      name,
-      password: pass,
-      points: 0,
-      streak: 1,
-      lastActive: new Date().toISOString(),
-      profileImage: image,
-      isBlocked: false
+      id: id, email: email || undefined, name, password: pass,
+      points: 0, streak: 1, lastActive: new Date().toISOString(),
+      profileImage: image, isBlocked: false
     };
     saveUserToStore(newUser);
     localStorage.setItem('studybuddy_session_id', id);
