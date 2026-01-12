@@ -22,15 +22,6 @@ const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>(View.LOGIN);
   const [user, setUser] = useState<UserProfile | null>(null);
 
-  const navigateTo = (newView: View, replace: boolean = false) => {
-    if (replace) {
-      window.history.replaceState({ view: newView }, '', '');
-    } else {
-      window.history.pushState({ view: newView }, '', '');
-    }
-    setCurrentView(newView);
-  };
-
   const loadUserFromStorage = () => {
     const session = localStorage.getItem('studybuddy_session_id');
     const usersRaw = localStorage.getItem('studybuddy_registered_users');
@@ -52,29 +43,37 @@ const App: React.FC = () => {
     loadUserFromStorage();
     
     const session = localStorage.getItem('studybuddy_session_id');
-    const startView = session ? View.HOME : View.LOGIN;
-    setCurrentView(startView);
-    window.history.replaceState({ view: startView }, '', '');
+    setCurrentView(session ? View.HOME : View.LOGIN);
 
     const handlePopState = (event: PopStateEvent) => {
       if (event.state && event.state.view) {
         setCurrentView(event.state.view);
-      } else {
-        const session = localStorage.getItem('studybuddy_session_id');
-        setCurrentView(session ? View.HOME : View.LOGIN);
       }
     };
 
+    const handleStorageUpdate = () => {
+      loadUserFromStorage();
+    };
+
     window.addEventListener('popstate', handlePopState);
-    window.addEventListener('storage', loadUserFromStorage);
-    window.addEventListener('local-storage-update', loadUserFromStorage);
+    window.addEventListener('storage', handleStorageUpdate);
+    window.addEventListener('local-storage-update', handleStorageUpdate);
     
     return () => {
       window.removeEventListener('popstate', handlePopState);
-      window.removeEventListener('storage', loadUserFromStorage);
-      window.removeEventListener('local-storage-update', loadUserFromStorage);
+      window.removeEventListener('storage', handleStorageUpdate);
+      window.removeEventListener('local-storage-update', handleStorageUpdate);
     };
   }, []);
+
+  const navigateTo = (newView: View, replace: boolean = false) => {
+    if (replace) {
+      window.history.replaceState({ view: newView }, '', '');
+    } else {
+      window.history.pushState({ view: newView }, '', '');
+    }
+    setCurrentView(newView);
+  };
 
   const saveUserToStore = (updatedUser: UserProfile) => {
     const usersRaw = localStorage.getItem('studybuddy_registered_users');
@@ -87,7 +86,6 @@ const App: React.FC = () => {
     }
     localStorage.setItem('studybuddy_registered_users', JSON.stringify(users));
     setUser(updatedUser);
-    // Dispatch event so other components (like Admin Panel) know data changed
     window.dispatchEvent(new CustomEvent('local-storage-update'));
   };
 
@@ -100,12 +98,13 @@ const App: React.FC = () => {
 
   const handleLogin = (id: string, pass: string): string | null => {
     const usersRaw = localStorage.getItem('studybuddy_registered_users');
-    if (!usersRaw) return 'অ্যাকাউন্ট পাওয়া যায়নি। রেজিস্ট্রেশন করুন।';
+    if (!usersRaw) return 'অ্যাকাউন্ট পাওয়া যায়নি।';
     const users: UserProfile[] = JSON.parse(usersRaw);
     const found = users.find(u => u.id === id);
-    if (!found) return 'ইউজার আইডি ভুল।';
-    if (found.password !== pass) return 'পাসওয়ার্ড ভুল।';
-    if (found.isBlocked) return 'অ্যাকাউন্টটি ব্লক করা হয়েছে।';
+    if (!found) return 'ভুল আইডি।';
+    if (found.password !== pass) return 'ভুল পাসওয়ার্ড।';
+    if (found.isBlocked) return 'অ্যাকাউন্টটি ব্লকড।';
+    
     setUser(found);
     localStorage.setItem('studybuddy_session_id', found.id);
     navigateTo(View.HOME, true);
@@ -115,19 +114,13 @@ const App: React.FC = () => {
 
   const handleRegister = (name: string, id: string, email: string, pass: string, image?: string) => {
     const newUser: UserProfile = {
-      id: id, email: email || undefined, name, password: pass,
+      id, email: email || undefined, name, password: pass,
       points: 0, streak: 1, lastActive: new Date().toISOString(),
       profileImage: image, isBlocked: false
     };
     saveUserToStore(newUser);
     localStorage.setItem('studybuddy_session_id', id);
     navigateTo(View.HOME, true);
-  };
-
-  const addPoints = (amount: number) => {
-    if (!user) return;
-    const updated = { ...user, points: user.points + amount, lastActive: new Date().toISOString() };
-    saveUserToStore(updated);
   };
 
   const handleUpdateProfile = (updatedData: Partial<UserProfile>) => {
@@ -151,7 +144,10 @@ const App: React.FC = () => {
       case View.SPELLING_CHECKER: return <SpellingChecker onBack={() => window.history.back()} />;
       case View.SCRIPT_WRITER: return <ScriptWriter onBack={() => window.history.back()} />;
       case View.SUPPORT_CHAT: return <SupportChat onBack={() => window.history.back()} userId={user.id} userName={user.name} />;
-      case View.DAILY_CHALLENGE: return <DailyChallenge onBack={() => window.history.back()} onComplete={(pts) => addPoints(pts)} />;
+      case View.DAILY_CHALLENGE: return <DailyChallenge onBack={() => window.history.back()} onComplete={(pts) => {
+        const updated = { ...user, points: user.points + pts };
+        saveUserToStore(updated);
+      }} />;
       case View.ADMIN_LOGIN: return <AdminLogin onBack={() => window.history.back()} onLogin={() => navigateTo(View.ADMIN_PANEL)} />;
       case View.ADMIN_PANEL: return <AdminPanel onBack={() => window.history.back()} />;
       case View.PROFILE: return <Profile onBack={() => window.history.back()} user={user} onUpdate={handleUpdateProfile} onLogout={handleLogout} />;
