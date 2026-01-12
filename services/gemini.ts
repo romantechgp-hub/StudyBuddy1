@@ -1,10 +1,12 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Helper function to get AI instance
+const getAI = () => new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 export const studyService = {
   async explainTopic(topic: string, level: 'basic' | 'standard') {
+    const ai = getAI();
     const prompt = `Explain the following topic in simple Bengali: "${topic}". 
     Target Audience: Student. 
     Detail Level: ${level === 'basic' ? 'Beginner/Children' : 'Standard'}.
@@ -22,6 +24,7 @@ export const studyService = {
   },
 
   async explainTopicWithImage(base64Image: string, level: 'basic' | 'standard') {
+    const ai = getAI();
     const imagePart = {
       inlineData: {
         mimeType: 'image/jpeg',
@@ -47,6 +50,7 @@ export const studyService = {
   },
 
   async solveMath(problem: string) {
+    const ai = getAI();
     const prompt = `Solve this math problem: "${problem}". 
     Format the output strictly as follows:
     1. Provide the Final Answer first.
@@ -69,6 +73,7 @@ export const studyService = {
   },
 
   async solveMathWithImage(base64Image: string) {
+    const ai = getAI();
     const imagePart = {
       inlineData: {
         mimeType: 'image/jpeg',
@@ -98,6 +103,7 @@ export const studyService = {
   },
 
   async translateAndPronounce(text: string, direction: 'bn-en' | 'en-bn') {
+    const ai = getAI();
     const fromLang = direction === 'bn-en' ? 'Bengali' : 'English';
     const toLang = direction === 'bn-en' ? 'English' : 'Bengali';
     
@@ -127,6 +133,7 @@ export const studyService = {
   },
 
   async translateAndPronounceWithImage(base64Image: string, direction: 'bn-en' | 'en-bn') {
+    const ai = getAI();
     const fromLang = direction === 'bn-en' ? 'Bengali' : 'English';
     const toLang = direction === 'bn-en' ? 'English' : 'Bengali';
 
@@ -164,6 +171,7 @@ export const studyService = {
   },
 
   async generateScript(topic: string, language: 'bn' | 'en') {
+    const ai = getAI();
     const langName = language === 'bn' ? 'Bengali' : 'English';
     const prompt = `Write a creative and useful script about the topic: "${topic}" in ${langName}. 
     The script could be for a video, a presentation, or a short play. 
@@ -177,6 +185,7 @@ export const studyService = {
   },
 
   async validateEnglishSentence(sentence: string) {
+    const ai = getAI();
     const prompt = `Check if this is a correct and meaningful English sentence: "${sentence}".
     Respond with a JSON object:
     - isValid: true or false.
@@ -202,6 +211,7 @@ export const studyService = {
   },
 
   async checkSpelling(text: string, language: 'bn' | 'en') {
+    const ai = getAI();
     const prompt = `Check the spelling and grammar of the following ${language === 'bn' ? 'Bengali' : 'English'} text: "${text}".
     Provide the output in JSON format:
     - original: The original text provided.
@@ -229,6 +239,7 @@ export const studyService = {
   },
 
   async checkSpellingWithImage(base64Image: string, language: 'bn' | 'en') {
+    const ai = getAI();
     const imagePart = {
       inlineData: {
         mimeType: 'image/jpeg',
@@ -264,6 +275,7 @@ export const studyService = {
   },
 
   async askQuestion(question: string) {
+    const ai = getAI();
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: `Answer this question in Bengali: "${question}". Be concise and helpful.`,
@@ -272,6 +284,7 @@ export const studyService = {
   },
 
   async askQuestionWithImage(base64Image: string) {
+    const ai = getAI();
     const imagePart = {
       inlineData: {
         mimeType: 'image/jpeg',
@@ -290,6 +303,7 @@ export const studyService = {
   },
 
   async chatWithFriend(history: { role: 'user' | 'model', parts: { text: string }[] }[], message: string) {
+    const ai = getAI();
     const saved = localStorage.getItem('global_settings');
     let instruction = `You are Roman, a friendly AI English tutor for Bengali students. Your goal is to help them speak English naturally while teaching them through their mistakes.
 

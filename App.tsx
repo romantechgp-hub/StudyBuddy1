@@ -23,7 +23,7 @@ const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>(View.LOGIN);
   const [user, setUser] = useState<UserProfile | null>(null);
 
-  // Custom Navigation function to handle History API (Kept for back button support)
+  // Custom Navigation function to handle History API
   const navigateTo = (newView: View, replace: boolean = false) => {
     if (replace) {
       window.history.replaceState({ view: newView }, '', '');
@@ -53,18 +53,20 @@ const App: React.FC = () => {
   useEffect(() => {
     loadUserFromStorage();
     
-    // Initial view set and push initial history state
+    // Initial view setup based on session
     const session = localStorage.getItem('studybuddy_session_id');
     const startView = session ? View.HOME : View.LOGIN;
     setCurrentView(startView);
     window.history.replaceState({ view: startView }, '', '');
 
-    // Handle back button clicks
+    // Handle back/forward button clicks
     const handlePopState = (event: PopStateEvent) => {
       if (event.state && event.state.view) {
         setCurrentView(event.state.view);
       } else {
-        setCurrentView(View.HOME);
+        // Default to safe view if state is missing
+        const session = localStorage.getItem('studybuddy_session_id');
+        setCurrentView(session ? View.HOME : View.LOGIN);
       }
     };
 
