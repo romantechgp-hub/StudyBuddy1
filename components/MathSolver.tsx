@@ -76,7 +76,7 @@ const MathSolver: React.FC<MathSolverProps> = ({ onBack }) => {
   };
 
   return (
-    <div className="bg-white rounded-[2.5rem] p-8 sm:p-12 shadow-xl shadow-slate-200 border border-slate-50 animate-in fade-in slide-in-from-top-4 duration-700 max-w-3xl mx-auto">
+    <div className="bg-white rounded-[2.5rem] p-6 sm:p-12 shadow-xl shadow-slate-200 border border-slate-50 animate-in fade-in slide-in-from-top-4 duration-700 max-w-3xl mx-auto">
       {cropperSrc && (
         <ImageCropper 
           image={cropperSrc} 
@@ -94,7 +94,7 @@ const MathSolver: React.FC<MathSolverProps> = ({ onBack }) => {
           ←
         </button>
         <div>
-          <h2 className="text-2xl font-black text-slate-800 tracking-tight">অংক সমাধানকারী</h2>
+          <h2 className="text-xl sm:text-2xl font-black text-slate-800 tracking-tight">অংক সমাধানকারী</h2>
           <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">ধাপে ধাপে সহজ সমাধান</p>
         </div>
       </div>
@@ -171,8 +171,8 @@ const MathSolver: React.FC<MathSolverProps> = ({ onBack }) => {
         </button>
 
         {result && (
-          <div className="mt-8 space-y-6 animate-in zoom-in duration-500">
-            <div className="p-8 bg-emerald-50 rounded-[2.5rem] border border-emerald-100">
+          <div className="mt-6 sm:mt-8 space-y-6 animate-in zoom-in duration-500">
+            <div className="p-5 sm:p-8 bg-emerald-50 rounded-[2.5rem] border border-emerald-100 shadow-sm">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
                   <span className="w-10 h-10 bg-white text-emerald-600 rounded-xl flex items-center justify-center text-xl shadow-sm">💡</span>
@@ -185,7 +185,7 @@ const MathSolver: React.FC<MathSolverProps> = ({ onBack }) => {
                   কপি করো
                 </button>
               </div>
-              <div className="whitespace-pre-wrap text-slate-700 leading-relaxed font-bold bg-white/50 p-6 rounded-2xl border border-emerald-50 shadow-inner">
+              <div className="whitespace-pre-wrap text-slate-700 leading-relaxed font-bold bg-white/50 p-5 sm:p-6 rounded-2xl border border-emerald-50 shadow-inner min-h-[250px] sm:min-h-fit text-base sm:text-lg">
                 {result}
               </div>
             </div>

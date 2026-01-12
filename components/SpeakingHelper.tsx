@@ -89,7 +89,7 @@ const SpeakingHelper: React.FC<SpeakingHelperProps> = ({ onBack }) => {
   };
 
   return (
-    <div className="bg-white rounded-[2.5rem] p-8 shadow-xl border border-slate-100 animate-in fade-in duration-500 max-w-3xl mx-auto">
+    <div className="bg-white rounded-[2.5rem] p-6 sm:p-8 shadow-xl border border-slate-100 animate-in fade-in duration-500 max-w-3xl mx-auto">
       {cropperSrc && (
         <ImageCropper 
           image={cropperSrc} 
@@ -104,7 +104,7 @@ const SpeakingHelper: React.FC<SpeakingHelperProps> = ({ onBack }) => {
           ←
         </button>
         <div>
-          <h2 className="text-2xl font-black text-slate-800 tracking-tight">অনুবাদ ও স্পিকিং হেল্পার</h2>
+          <h2 className="text-xl sm:text-2xl font-black text-slate-800 tracking-tight">অনুবাদ ও স্পিকিং হেল্পার</h2>
           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">ভাষা শেখা এখন আরও সহজ</p>
         </div>
       </div>
@@ -197,14 +197,14 @@ const SpeakingHelper: React.FC<SpeakingHelperProps> = ({ onBack }) => {
 
         {result && (
           <div className="space-y-6 animate-in zoom-in duration-500">
-            <div className="p-8 bg-purple-50 rounded-[2.5rem] border border-purple-100 relative group overflow-hidden">
+            <div className="p-6 sm:p-8 bg-purple-50 rounded-[2.5rem] border border-purple-100 relative group overflow-hidden shadow-sm min-h-[250px] sm:min-h-fit">
               <div className="flex justify-between items-start relative z-10">
                 <div className="flex-grow pr-12">
                   <div className="flex items-center gap-3 mb-2">
                     <p className="text-[10px] font-black text-purple-600 uppercase tracking-[0.2em]">Sothik Onubad</p>
                     <button onClick={copyToClipboard} className="text-[9px] font-black uppercase text-purple-400 hover:text-purple-700 underline tracking-widest">Copy</button>
                   </div>
-                  <p className="text-3xl font-black text-slate-800 leading-tight">{result.translation}</p>
+                  <p className="text-2xl sm:text-3xl font-black text-slate-800 leading-tight">{result.translation}</p>
                 </div>
                 <button 
                   onClick={() => playAudio(result.translation)}
@@ -221,12 +221,12 @@ const SpeakingHelper: React.FC<SpeakingHelperProps> = ({ onBack }) => {
             </div>
 
             {result.explanation && (
-              <div className="p-8 bg-indigo-50/50 rounded-[2.5rem] border border-indigo-100">
+              <div className="p-6 sm:p-8 bg-indigo-50/50 rounded-[2.5rem] border border-indigo-100 shadow-sm min-h-[150px] sm:min-h-fit">
                 <div className="flex items-center gap-3 mb-3">
                   <span className="text-xl">🎓</span>
                   <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Teacher's Note (শিখিয়ে দিচ্ছি)</p>
                 </div>
-                <p className="text-sm font-bold text-slate-600 leading-relaxed">{result.explanation}</p>
+                <p className="text-base sm:text-sm font-bold text-slate-600 leading-relaxed">{result.explanation}</p>
               </div>
             )}
           </div>

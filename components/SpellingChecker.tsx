@@ -89,7 +89,7 @@ const SpellingChecker: React.FC<SpellingCheckerProps> = ({ onBack }) => {
         />
       )}
 
-      <div className="bg-white rounded-[2.5rem] p-8 sm:p-12 shadow-xl shadow-slate-200 border border-slate-50">
+      <div className="bg-white rounded-[2.5rem] p-6 sm:p-12 shadow-xl shadow-slate-200 border border-slate-50">
         <div className="flex items-center gap-4 mb-10">
           <button 
             onClick={onBack} 
@@ -98,7 +98,7 @@ const SpellingChecker: React.FC<SpellingCheckerProps> = ({ onBack }) => {
             ←
           </button>
           <div>
-            <h2 className="text-2xl font-black text-slate-800 tracking-tight">সঠিক বানান শিখুন</h2>
+            <h2 className="text-xl sm:text-2xl font-black text-slate-800 tracking-tight">সঠিক বানান শিখুন</h2>
             <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">ভাষা ও বানান সংশোধন</p>
           </div>
         </div>
@@ -192,17 +192,19 @@ const SpellingChecker: React.FC<SpellingCheckerProps> = ({ onBack }) => {
           {result && (
             <div className="space-y-6 animate-in zoom-in duration-500">
               {capturedImage && result.original && (
-                <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100 italic text-slate-500 text-sm font-bold">
+                <div className="p-4 sm:p-6 bg-slate-50 rounded-2xl border border-slate-100 italic text-slate-500 text-sm font-bold">
                   চিহ্নিত টেক্সট: "{result.original}"
                 </div>
               )}
               
-              <div className="p-8 bg-green-50 rounded-[2.5rem] border border-green-100 relative">
+              <div className="p-6 sm:p-8 bg-green-50 rounded-[2.5rem] border border-green-100 relative shadow-sm">
                 <div className="flex justify-between items-center mb-4">
                   <p className="text-[10px] font-black text-green-600 uppercase tracking-widest">সঠিক বাক্য:</p>
                   <button onClick={copyCorrected} className="text-[9px] font-black uppercase text-green-600 hover:underline">Copy</button>
                 </div>
-                <p className="text-xl font-black text-slate-800 leading-relaxed bg-white/50 p-6 rounded-2xl border border-green-100 shadow-inner">{result.corrected}</p>
+                <p className="text-lg sm:text-xl font-black text-slate-800 leading-relaxed bg-white/50 p-5 sm:p-6 rounded-2xl border border-green-100 shadow-inner min-h-[200px] sm:min-h-fit">
+                  {result.corrected}
+                </p>
                 {result.differences && (
                   <div className="pt-4 border-t border-green-200 mt-6">
                     <p className="text-[10px] font-black text-green-600 uppercase tracking-widest mb-2">কী সংশোধন করা হয়েছে:</p>
@@ -212,9 +214,9 @@ const SpellingChecker: React.FC<SpellingCheckerProps> = ({ onBack }) => {
               </div>
 
               {result.explanation && (
-                <div className="p-8 bg-blue-50 rounded-[2.5rem] border border-blue-100">
+                <div className="p-6 sm:p-8 bg-blue-50 rounded-[2.5rem] border border-blue-100 shadow-sm min-h-[150px] sm:min-h-fit">
                   <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-2">সহজ ব্যাখ্যা:</p>
-                  <p className="text-sm font-bold text-slate-600 leading-relaxed">{result.explanation}</p>
+                  <p className="text-base sm:text-sm font-bold text-slate-600 leading-relaxed">{result.explanation}</p>
                 </div>
               )}
             </div>

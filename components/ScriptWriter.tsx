@@ -45,7 +45,7 @@ const ScriptWriter: React.FC<ScriptWriterProps> = ({ onBack }) => {
   };
 
   return (
-    <div className="bg-white rounded-[2.5rem] p-8 sm:p-12 shadow-xl shadow-slate-200 border border-slate-50 animate-in fade-in slide-in-from-top-4 duration-700 max-w-3xl mx-auto">
+    <div className="bg-white rounded-[2.5rem] p-6 sm:p-12 shadow-xl shadow-slate-200 border border-slate-50 animate-in fade-in slide-in-from-top-4 duration-700 max-w-3xl mx-auto">
       <div className="flex items-center gap-4 mb-10">
         <button 
           onClick={onBack} 
@@ -54,7 +54,7 @@ const ScriptWriter: React.FC<ScriptWriterProps> = ({ onBack }) => {
           ←
         </button>
         <div>
-          <h2 className="text-2xl font-black text-slate-800 tracking-tight">স্ক্রিপ্ট লিখে নাও</h2>
+          <h2 className="text-xl sm:text-2xl font-black text-slate-800 tracking-tight">স্ক্রিপ্ট লিখে নাও</h2>
           <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">উপস্থাপনা বা ভিডিওর জন্য স্ক্রিপ্ট</p>
         </div>
       </div>
@@ -104,11 +104,11 @@ const ScriptWriter: React.FC<ScriptWriterProps> = ({ onBack }) => {
         </button>
 
         {script && (
-          <div className="mt-8 p-8 bg-teal-50 rounded-[2.5rem] border border-teal-100 animate-in zoom-in duration-500">
+          <div className="mt-6 sm:mt-8 p-6 sm:p-8 bg-teal-50 rounded-[2.5rem] border border-teal-100 animate-in zoom-in duration-500 shadow-sm">
             <h4 className="text-teal-800 font-black mb-6 flex items-center gap-2">
               <span className="text-2xl">📝</span> আপনার স্ক্রিপ্ট:
             </h4>
-            <div className="whitespace-pre-wrap text-slate-700 leading-relaxed font-medium bg-white p-6 rounded-2xl shadow-inner border border-teal-50">
+            <div className="whitespace-pre-wrap text-slate-700 leading-relaxed font-medium bg-white p-5 sm:p-6 rounded-2xl shadow-inner border border-teal-50 min-h-[400px] sm:min-h-fit text-base sm:text-base">
               {script}
             </div>
             

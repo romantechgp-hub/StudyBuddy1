@@ -23,6 +23,16 @@ const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>(View.LOGIN);
   const [user, setUser] = useState<UserProfile | null>(null);
 
+  // Custom Navigation function to handle History API
+  const navigateTo = (newView: View, replace: boolean = false) => {
+    if (replace) {
+      window.history.replaceState({ view: newView }, '', '');
+    } else {
+      window.history.pushState({ view: newView }, '', '');
+    }
+    setCurrentView(newView);
+  };
+
   const loadUserFromStorage = () => {
     const session = localStorage.getItem('studybuddy_session_id');
     const usersRaw = localStorage.getItem('studybuddy_registered_users');
@@ -43,13 +53,25 @@ const App: React.FC = () => {
   useEffect(() => {
     loadUserFromStorage();
     
-    // Initial view set
+    // Initial view set and push initial history state
     const session = localStorage.getItem('studybuddy_session_id');
-    if (session && currentView === View.LOGIN) {
-      setCurrentView(View.HOME);
-    }
+    const startView = session ? View.HOME : View.LOGIN;
+    setCurrentView(startView);
+    window.history.replaceState({ view: startView }, '', '');
 
-    // Listener for storage changes (to sync data if Admin changes it)
+    // Handle back button clicks
+    const handlePopState = (event: PopStateEvent) => {
+      if (event.state && event.state.view) {
+        setCurrentView(event.state.view);
+      } else {
+        // Fallback to home if no state
+        setCurrentView(View.HOME);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+
+    // Listener for storage changes
     const handleStorageChange = () => {
       loadUserFromStorage();
     };
@@ -58,6 +80,7 @@ const App: React.FC = () => {
     window.addEventListener('local-storage-update', handleStorageChange);
     
     return () => {
+      window.removeEventListener('popstate', handlePopState);
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('local-storage-update', handleStorageChange);
     };
@@ -80,7 +103,7 @@ const App: React.FC = () => {
   const handleLogout = () => {
     localStorage.removeItem('studybuddy_session_id');
     setUser(null);
-    setCurrentView(View.LOGIN);
+    navigateTo(View.LOGIN, true);
   };
 
   const handleLogin = (id: string, pass: string): string | null => {
@@ -96,7 +119,7 @@ const App: React.FC = () => {
     
     setUser(found);
     localStorage.setItem('studybuddy_session_id', found.id);
-    setCurrentView(View.HOME);
+    navigateTo(View.HOME, true);
     return null;
   };
 
@@ -114,7 +137,7 @@ const App: React.FC = () => {
     };
     saveUserToStore(newUser);
     localStorage.setItem('studybuddy_session_id', id);
-    setCurrentView(View.HOME);
+    navigateTo(View.HOME, true);
   };
 
   const addPoints = (amount: number) => {
@@ -130,31 +153,31 @@ const App: React.FC = () => {
   };
 
   const renderView = () => {
-    if (currentView === View.LOGIN) return <Login onLogin={handleLogin} onGoToRegister={() => setCurrentView(View.REGISTER)} />;
-    if (currentView === View.REGISTER) return <UserSetup onComplete={handleRegister} onGoToLogin={() => setCurrentView(View.LOGIN)} />;
-    if (!user) return <Login onLogin={handleLogin} onGoToRegister={() => setCurrentView(View.REGISTER)} />;
+    if (currentView === View.LOGIN) return <Login onLogin={handleLogin} onGoToRegister={() => navigateTo(View.REGISTER)} />;
+    if (currentView === View.REGISTER) return <UserSetup onComplete={handleRegister} onGoToLogin={() => navigateTo(View.LOGIN)} />;
+    if (!user) return <Login onLogin={handleLogin} onGoToRegister={() => navigateTo(View.REGISTER)} />;
 
     switch (currentView) {
-      case View.HOME: return <Home setView={setCurrentView} user={user} />;
-      case View.STUDY_MODE: return <StudyMode onBack={() => setCurrentView(View.HOME)} />;
-      case View.MATH_SOLVER: return <MathSolver onBack={() => setCurrentView(View.HOME)} />;
-      case View.SPEAKING_HELPER: return <SpeakingHelper onBack={() => setCurrentView(View.HOME)} />;
-      case View.QA_MODE: return <QAMode onBack={() => setCurrentView(View.HOME)} />;
-      case View.TALK_MODE: return <TalkMode onBack={() => setCurrentView(View.HOME)} />;
-      case View.SPELLING_CHECKER: return <SpellingChecker onBack={() => setCurrentView(View.HOME)} />;
-      case View.SCRIPT_WRITER: return <ScriptWriter onBack={() => setCurrentView(View.HOME)} />;
-      case View.SUPPORT_CHAT: return <SupportChat onBack={() => setCurrentView(View.HOME)} userId={user.id} userName={user.name} />;
-      case View.DAILY_CHALLENGE: return <DailyChallenge onBack={() => setCurrentView(View.HOME)} onComplete={(pts) => addPoints(pts)} />;
-      case View.ADMIN_LOGIN: return <AdminLogin onBack={() => setCurrentView(View.HOME)} onLogin={() => setCurrentView(View.ADMIN_PANEL)} />;
-      case View.ADMIN_PANEL: return <AdminPanel onBack={() => setCurrentView(View.HOME)} />;
-      case View.PROFILE: return <Profile onBack={() => setCurrentView(View.HOME)} user={user} onUpdate={handleUpdateProfile} onLogout={handleLogout} />;
-      default: return <Home setView={setCurrentView} user={user} />;
+      case View.HOME: return <Home setView={navigateTo} user={user} />;
+      case View.STUDY_MODE: return <StudyMode onBack={() => window.history.back()} />;
+      case View.MATH_SOLVER: return <MathSolver onBack={() => window.history.back()} />;
+      case View.SPEAKING_HELPER: return <SpeakingHelper onBack={() => window.history.back()} />;
+      case View.QA_MODE: return <QAMode onBack={() => window.history.back()} />;
+      case View.TALK_MODE: return <TalkMode onBack={() => window.history.back()} />;
+      case View.SPELLING_CHECKER: return <SpellingChecker onBack={() => window.history.back()} />;
+      case View.SCRIPT_WRITER: return <ScriptWriter onBack={() => window.history.back()} />;
+      case View.SUPPORT_CHAT: return <SupportChat onBack={() => window.history.back()} userId={user.id} userName={user.name} />;
+      case View.DAILY_CHALLENGE: return <DailyChallenge onBack={() => window.history.back()} onComplete={(pts) => addPoints(pts)} />;
+      case View.ADMIN_LOGIN: return <AdminLogin onBack={() => window.history.back()} onLogin={() => navigateTo(View.ADMIN_PANEL)} />;
+      case View.ADMIN_PANEL: return <AdminPanel onBack={() => window.history.back()} />;
+      case View.PROFILE: return <Profile onBack={() => window.history.back()} user={user} onUpdate={handleUpdateProfile} onLogout={handleLogout} />;
+      default: return <Home setView={navigateTo} user={user} />;
     }
   };
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
-      {user && <Header user={user} setView={setCurrentView} />}
+      {user && <Header user={user} setView={navigateTo} />}
       <main className="flex-grow container mx-auto px-4 py-6 max-w-4xl">
         {renderView()}
       </main>

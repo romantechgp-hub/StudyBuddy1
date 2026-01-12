@@ -76,7 +76,7 @@ const QAMode: React.FC<QAModeProps> = ({ onBack }) => {
   };
 
   return (
-    <div className="bg-white rounded-[2.5rem] p-8 shadow-xl border border-slate-100 max-w-3xl mx-auto">
+    <div className="bg-white rounded-[2.5rem] p-6 sm:p-8 shadow-xl border border-slate-100 max-w-3xl mx-auto">
       {cropperSrc && (
         <ImageCropper 
           image={cropperSrc} 
@@ -91,7 +91,7 @@ const QAMode: React.FC<QAModeProps> = ({ onBack }) => {
           ←
         </button>
         <div>
-          <h2 className="text-2xl font-black text-slate-800 tracking-tight">প্রশ্ন ও উত্তর</h2>
+          <h2 className="text-xl sm:text-2xl font-black text-slate-800 tracking-tight">প্রশ্ন ও উত্তর</h2>
           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">যেকোনো প্রশ্নের সহজ উত্তর</p>
         </div>
       </div>
@@ -151,14 +151,16 @@ const QAMode: React.FC<QAModeProps> = ({ onBack }) => {
         </button>
 
         {result && (
-          <div className="mt-8 p-8 bg-rose-50/50 rounded-[2.5rem] border border-rose-100 animate-in zoom-in duration-500">
+          <div className="mt-6 sm:mt-8 p-6 sm:p-8 bg-rose-50/50 rounded-[2.5rem] border border-rose-100 shadow-sm animate-in zoom-in duration-500">
             <div className="flex justify-between items-center mb-4">
               <h4 className="font-black text-rose-800 flex items-center gap-2">
                 <span className="text-xl">✍️</span> উত্তর:
               </h4>
               <button onClick={copyToClipboard} className="bg-white text-rose-600 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border border-rose-100 shadow-sm">কপি করো</button>
             </div>
-            <div className="whitespace-pre-wrap text-slate-700 leading-relaxed font-medium bg-white p-6 rounded-2xl border border-rose-50 shadow-inner">{result}</div>
+            <div className="whitespace-pre-wrap text-slate-700 leading-relaxed font-medium bg-white p-5 sm:p-6 rounded-2xl border border-rose-50 shadow-inner min-h-[250px] sm:min-h-fit text-base sm:text-base">
+              {result}
+            </div>
           </div>
         )}
       </div>

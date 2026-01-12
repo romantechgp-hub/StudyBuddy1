@@ -77,7 +77,7 @@ const StudyMode: React.FC<StudyModeProps> = ({ onBack }) => {
   };
 
   return (
-    <div className="bg-white rounded-[2.5rem] p-8 shadow-xl border border-slate-100 max-w-3xl mx-auto">
+    <div className="bg-white rounded-[2.5rem] p-6 sm:p-8 shadow-xl border border-slate-100 max-w-3xl mx-auto">
       {cropperSrc && (
         <ImageCropper 
           image={cropperSrc} 
@@ -92,7 +92,7 @@ const StudyMode: React.FC<StudyModeProps> = ({ onBack }) => {
           ←
         </button>
         <div>
-          <h2 className="text-2xl font-black text-slate-800 tracking-tight">সহজ পড়া মোড</h2>
+          <h2 className="text-xl sm:text-2xl font-black text-slate-800 tracking-tight">সহজ পড়া মোড</h2>
           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">টপিক সহজে বুঝতে</p>
         </div>
       </div>
@@ -162,14 +162,16 @@ const StudyMode: React.FC<StudyModeProps> = ({ onBack }) => {
         </button>
 
         {result && (
-          <div className="mt-10 p-8 bg-blue-50/50 rounded-[2.5rem] border border-blue-100 relative group animate-in zoom-in duration-500">
+          <div className="mt-6 sm:mt-10 p-5 sm:p-8 bg-blue-50/50 rounded-[2.5rem] border border-blue-100 relative group animate-in zoom-in duration-500">
             <div className="flex justify-between items-center mb-6">
               <h4 className="font-black text-blue-800 flex items-center gap-2">
                 <span className="text-xl">💡</span> ব্যাখ্যা:
               </h4>
               <button onClick={copyToClipboard} className="bg-white text-blue-600 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest shadow-sm border border-blue-100">কপি করো</button>
             </div>
-            <div className="whitespace-pre-wrap text-slate-700 leading-relaxed font-medium bg-white p-6 rounded-2xl border border-blue-50 shadow-inner">{result}</div>
+            <div className="whitespace-pre-wrap text-slate-700 leading-relaxed font-medium bg-white p-5 sm:p-6 rounded-2xl border border-blue-50 shadow-inner min-h-[300px] sm:min-h-fit text-base sm:text-base">
+              {result}
+            </div>
           </div>
         )}
       </div>
