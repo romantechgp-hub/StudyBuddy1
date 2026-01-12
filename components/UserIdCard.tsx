@@ -269,8 +269,7 @@ const UserIdCard: React.FC<UserIdCardProps> = ({ user, adminName, onClose, isAdm
                   <div className={`w-full h-44 ${currentTheme.header} relative flex flex-col items-center justify-start pt-10 overflow-hidden`}>
                     <div className="absolute top-0 right-0 w-56 h-56 bg-white/10 rounded-full -mr-28 -mt-28"></div>
                     <div className="absolute bottom-0 left-0 w-40 h-40 bg-black/5 rounded-full -ml-20 -mb-20"></div>
-                    <h3 className="text-white font-black text-2xl tracking-tighter uppercase leading-none relative z-10">Identity Card</h3>
-                    <p className="text-white/60 text-[10px] font-black tracking-[0.4em] mt-2 uppercase relative z-10">Official Member</p>
+                    {/* Removed text from header */}
                   </div>
                   <div className="relative -mt-20 z-20 mb-4 px-10">
                     <div className="w-48 h-48 rounded-[3.5rem] border-[10px] border-white bg-slate-50 overflow-hidden shadow-2xl flex items-center justify-center">
@@ -317,7 +316,6 @@ const UserIdCard: React.FC<UserIdCardProps> = ({ user, adminName, onClose, isAdm
                       <p className={`text-[14px] font-black ${currentTheme.sub} italic leading-none`}>{issuedBy}</p>
                     </div>
                     <div className="flex items-center gap-3">
-                      <div className={`w-8 h-8 ${currentTheme.header} rounded-lg flex items-center justify-center text-white text-sm shadow-sm`}>📖</div>
                       <img src={qrCodeUrl} className="w-12 h-12 rounded-xl bg-white border border-slate-200 p-1 shadow-sm" alt="QR" />
                     </div>
                   </div>
@@ -329,8 +327,7 @@ const UserIdCard: React.FC<UserIdCardProps> = ({ user, adminName, onClose, isAdm
                 <div className="w-full h-full flex">
                   <div className={`w-24 h-full ${currentTheme.header} flex flex-col items-center justify-between py-12 relative overflow-hidden`}>
                      <div className="absolute top-0 w-40 h-40 bg-white/10 rounded-full -mt-20"></div>
-                     <p className="text-white font-black text-xs rotate-90 whitespace-nowrap tracking-[0.5em] uppercase opacity-30 origin-center translate-y-20">Identity Card</p>
-                     <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-2xl shadow-xl relative z-10">📖</div>
+                     {/* Removed identity text and logo from sidebar */}
                   </div>
                   <div className="flex-grow flex flex-col p-8 items-start text-left bg-white relative">
                      <div className="w-28 h-28 rounded-3xl border-4 border-slate-50 overflow-hidden shadow-xl mb-6 self-start">
@@ -385,9 +382,8 @@ const UserIdCard: React.FC<UserIdCardProps> = ({ user, adminName, onClose, isAdm
               {layout === 'modern' && (
                 <div className="p-10 w-full h-full flex flex-col items-center bg-white relative overflow-hidden">
                     <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-transparent via-slate-100 to-transparent"></div>
-                    <div className="flex justify-between w-full items-center mb-2 relative z-10">
-                       <h3 className={`font-black text-2xl tracking-tighter ${currentTheme.sub}`}>Identity Card</h3>
-                       <div className={`w-10 h-10 ${currentTheme.header} rounded-2xl flex items-center justify-center text-white shadow-xl`}>📖</div>
+                    <div className="flex justify-center w-full items-center mb-6 relative z-10">
+                       {/* Removed Identity Card text and logo */}
                     </div>
                     
                     <div className="w-44 h-44 rounded-full border-8 border-white overflow-hidden shadow-2xl mb-6 flex items-center justify-center bg-slate-50 ring-4 ring-slate-50">
@@ -396,7 +392,7 @@ const UserIdCard: React.FC<UserIdCardProps> = ({ user, adminName, onClose, isAdm
 
                     <div className="text-center w-full relative z-10">
                        <h2 className={`text-3xl font-black ${currentTheme.text} mb-1 tracking-tight`}>{editData.name}</h2>
-                       <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.3em]">Student Identity</p>
+                       <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.3em]">Official Student</p>
                        
                        <div className={`mt-6 p-5 rounded-[2.5rem] bg-slate-50 border border-slate-100 grid grid-cols-2 gap-y-3.5 text-left shadow-inner`}>
                           <div className="col-span-2">
@@ -433,8 +429,7 @@ const UserIdCard: React.FC<UserIdCardProps> = ({ user, adminName, onClose, isAdm
                  <>
                   <div className={`w-full h-32 ${currentTheme.header} relative overflow-hidden flex flex-col items-center justify-start pt-6 shrink-0`}>
                     <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
-                    <h3 className="text-white font-black text-2xl tracking-tight uppercase leading-none relative z-10 mb-1">Identity Card</h3>
-                    <p className={`text-white/60 text-[9px] font-black tracking-[0.4em] uppercase relative z-10`}>Official Identity</p>
+                    {/* Removed Identity Card text from header */}
                   </div>
                   <div className="relative -mt-20 z-10 mb-4 shrink-0">
                     <div className="w-44 h-44 rounded-[4rem] border-[10px] border-white bg-slate-100 overflow-hidden shadow-2xl flex items-center justify-center">
@@ -481,7 +476,7 @@ const UserIdCard: React.FC<UserIdCardProps> = ({ user, adminName, onClose, isAdm
                       <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Valid Until</p>
                       <p className={`text-[14px] font-black ${currentTheme.sub} italic leading-none`}>{editData.validity}</p>
                     </div>
-                    <div className={`w-12 h-12 ${currentTheme.header} rounded-2xl flex items-center justify-center text-white shadow-xl transition-all`}><span className="text-xl">🎓</span></div>
+                    {/* Removed Emoji logo from bottom right */}
                   </div>
                 </>
               )}
