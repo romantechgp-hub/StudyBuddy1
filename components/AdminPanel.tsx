@@ -63,15 +63,11 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
 
   useEffect(() => {
     loadData();
-    // Real-time polling to refresh online statuses even if no storage event fires
-    const interval = setInterval(loadData, 10000);
-
     const handleUpdate = () => loadData();
     window.addEventListener('storage', handleUpdate);
     window.addEventListener('local-storage-update', loadData);
     
     return () => {
-      clearInterval(interval);
       window.removeEventListener('storage', handleUpdate);
       window.removeEventListener('local-storage-update', loadData);
     };
@@ -79,11 +75,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
 
   const loadData = () => {
     const rawUsers = JSON.parse(localStorage.getItem('studybuddy_registered_users') || '[]');
-    // Sort users by activity: most recent first
-    const sortedUsers = rawUsers.sort((a: UserProfile, b: UserProfile) => {
-      return new Date(b.lastActive || 0).getTime() - new Date(a.lastActive || 0).getTime();
-    });
-    setUsers(sortedUsers);
+    setUsers(rawUsers);
     
     setTickets(JSON.parse(localStorage.getItem('admin_tickets') || '[]'));
     setBanners(JSON.parse(localStorage.getItem('admin_banners') || '[]'));
@@ -95,13 +87,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
     
     const savedCreds = localStorage.getItem('admin_credentials');
     if (savedCreds) setAdminCreds(JSON.parse(savedCreds));
-  };
-
-  const isOnline = (lastActive?: string) => {
-    if (!lastActive) return false;
-    const lastTime = new Date(lastActive).getTime();
-    const now = new Date().getTime();
-    return (now - lastTime) < 60000; // Active in the last 1 minute
   };
 
   const syncStorage = (key: string, data: any) => {
@@ -268,14 +253,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
     { label: '320x100', value: '320x100', aspect: 320/100 }
   ];
 
-  const currentSizeAspect = bannerSizes.find(s => s.value === newBannerSize)?.aspect || 1;
-
-  // Real-time Dashboard Stats
-  const totalUsers = users.length;
-  const onlineUsers = users.filter(u => isOnline(u.lastActive)).length;
-  const totalPoints = users.reduce((acc, u) => acc + u.points, 0);
-  const avgPoints = totalUsers > 0 ? Math.round(totalPoints / totalUsers) : 0;
-
   return (
     <div className="bg-white rounded-[2.5rem] shadow-2xl border border-slate-100 flex flex-col h-[850px] overflow-hidden animate-in fade-in duration-500">
       {cropperImage && (
@@ -302,7 +279,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
           <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center text-2xl shadow-lg">🛡️</div>
           <div>
             <h2 className="font-black text-xl tracking-tight leading-none">অ্যাডমিন ড্যাশবোর্ড</h2>
-            <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest mt-1">রিয়েল-টাইম কন্ট্রোল</p>
+            <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest mt-1">অ্যাডমিন কন্ট্রোল</p>
           </div>
         </div>
         <div className="flex bg-slate-800 rounded-xl p-1 overflow-x-auto no-scrollbar">
@@ -318,31 +295,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
       <div className="flex-grow overflow-hidden bg-slate-50/30">
         {activeTab === 'users' && (
           <div className="h-full overflow-y-auto p-6 sm:p-8 space-y-8">
-            
-            {/* Real-time Statistics Header */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 animate-in slide-in-from-top-4 duration-500">
-              <div className="bg-white p-5 rounded-[2rem] shadow-sm border border-slate-100 flex flex-col items-center justify-center text-center">
-                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">মোট ইউজার</span>
-                <span className="text-2xl font-black text-slate-800">{totalUsers}</span>
-              </div>
-              <div className="bg-indigo-600 p-5 rounded-[2rem] shadow-lg shadow-indigo-100 flex flex-col items-center justify-center text-center text-white relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-12 h-12 bg-white/10 rounded-full -mr-6 -mt-6"></div>
-                <span className="text-[9px] font-black uppercase tracking-widest mb-1 opacity-80">অনলাইন এখন</span>
-                <span className="text-2xl font-black flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 bg-emerald-400 rounded-full animate-ping"></span>
-                  {onlineUsers}
-                </span>
-              </div>
-              <div className="bg-white p-5 rounded-[2rem] shadow-sm border border-slate-100 flex flex-col items-center justify-center text-center">
-                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">মোট পয়েন্ট</span>
-                <span className="text-2xl font-black text-indigo-600">{totalPoints}</span>
-              </div>
-              <div className="bg-white p-5 rounded-[2rem] shadow-sm border border-slate-100 flex flex-col items-center justify-center text-center">
-                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">গড় পয়েন্ট</span>
-                <span className="text-2xl font-black text-slate-800">{avgPoints}</span>
-              </div>
-            </div>
-
             <div className="bg-white p-8 rounded-[2.5rem] shadow-xl border border-indigo-50 space-y-6">
               <h3 className="text-xl font-black text-slate-800">নতুন ইউজার তৈরি করুন</h3>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -354,27 +306,15 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
             </div>
             
             <div className="grid grid-cols-1 gap-6 pb-10">
-              <div className="flex items-center justify-between ml-2">
-                <h3 className="text-xl font-black text-slate-800">নিবন্ধিত সকল ইউজার ({users.length})</h3>
-                <span className="text-[9px] font-black text-slate-400 uppercase bg-slate-100 px-3 py-1 rounded-full">সর্বশেষ সক্রিয়তা অনুযায়ী সাজানো</span>
-              </div>
+              <h3 className="text-xl font-black text-slate-800 ml-2">নিবন্ধিত সকল ইউজার ({users.length})</h3>
               {users.map(u => (
-                <div key={u.id} className={`bg-white border-2 rounded-[2.5rem] p-8 shadow-xl hover:shadow-2xl transition-all flex flex-col md:flex-row gap-8 items-start relative group overflow-hidden ${isOnline(u.lastActive) ? 'border-emerald-100 bg-emerald-50/10' : 'border-slate-50'}`}>
-                  {/* Status Indicator */}
-                  {isOnline(u.lastActive) && (
-                    <div className="absolute top-4 left-4 flex items-center gap-1.5 bg-emerald-500 text-white px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest z-10 animate-pulse">
-                      <span className="w-1.5 h-1.5 bg-white rounded-full"></span>
-                      Online
-                    </div>
-                  )}
-
+                <div key={u.id} className="bg-white border border-slate-50 rounded-[2.5rem] p-8 shadow-xl hover:shadow-2xl transition-all flex flex-col md:flex-row gap-8 items-start relative group overflow-hidden">
                   <div className="absolute top-0 right-0 bg-indigo-600 text-white px-6 py-2 rounded-bl-[1.5rem] text-xs font-black shadow-lg">
                     {u.points} PTS
                   </div>
 
-                  {/* Profile Section */}
                   <div className="flex flex-col items-center gap-3 shrink-0 mx-auto md:mx-0">
-                    <div className={`w-32 h-32 rounded-[2rem] border-4 ${isOnline(u.lastActive) ? 'border-emerald-400 shadow-emerald-100' : 'border-slate-50'} bg-indigo-50 overflow-hidden shadow-lg flex items-center justify-center`}>
+                    <div className="w-32 h-32 rounded-[2rem] border-4 border-slate-50 bg-indigo-50 overflow-hidden shadow-lg flex items-center justify-center">
                       {u.profileImage ? (
                         <img src={u.profileImage} className="w-full h-full object-cover" alt={u.name} />
                       ) : (
@@ -386,7 +326,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
                     </div>
                   </div>
 
-                  {/* Info Section */}
                   <div className="flex-grow grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8 w-full">
                     <div className="space-y-1">
                       <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">পুরো নাম:</span>
@@ -401,52 +340,22 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
                       <p className="font-bold text-slate-600 leading-none">{u.password}</p>
                     </div>
                     <div className="space-y-1">
-                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">প্রতিষ্ঠান:</span>
-                      <p className="font-bold text-slate-600 leading-none">{u.institution || 'দেওয়া হয়নি'}</p>
-                    </div>
-                    <div className="space-y-1">
                       <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">শ্রেণী / গ্রেড:</span>
                       <p className="font-bold text-slate-600 leading-none">{u.grade || 'দেওয়া হয়নি'}</p>
                     </div>
-                    <div className="space-y-1">
-                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">সবশেষ অ্যাক্টিভ:</span>
-                      <p className={`text-[10px] font-bold leading-none ${isOnline(u.lastActive) ? 'text-emerald-500' : 'text-slate-400'}`}>
-                        {u.lastActive ? new Date(u.lastActive).toLocaleString('bn-BD') : 'তথ্য নেই'}
-                        {isOnline(u.lastActive) && ' (এখন অনলাইনে আছে)'}
-                      </p>
+                    <div className="col-span-1 sm:col-span-2 space-y-1">
+                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">প্রতিষ্ঠান:</span>
+                      <p className="font-bold text-slate-600 leading-none">{u.institution || 'দেওয়া হয়নি'}</p>
                     </div>
                   </div>
 
-                  {/* Actions Section */}
                   <div className="flex md:flex-col gap-3 shrink-0 self-center md:self-start w-full md:w-auto">
-                    <button 
-                      onClick={() => setIdCardUser(u)}
-                      className="flex-grow md:w-14 md:h-14 py-3 md:py-0 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center text-lg shadow-lg hover:bg-amber-600 hover:text-white transition-all"
-                      title="ID কার্ড তৈরি করুন"
-                    >
-                      🪪
-                    </button>
-                    <button 
-                      onClick={() => startMessageUser(u)}
-                      className="flex-grow md:w-14 md:h-14 py-3 md:py-0 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center text-lg shadow-lg hover:bg-indigo-600 hover:text-white transition-all"
-                      title="মেসেজ পাঠান"
-                    >
-                      💬
-                    </button>
-                    <button 
-                      onClick={() => handleToggleBlock(u.id)} 
-                      className={`flex-grow md:w-14 md:h-14 py-3 md:py-0 rounded-2xl flex items-center justify-center text-lg shadow-lg transition-all ${u.isBlocked ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white' : 'bg-amber-50 text-amber-600 hover:bg-amber-600 hover:text-white'}`}
-                      title={u.isBlocked ? 'আনব্লক করুন' : 'ব্লক করুন'}
-                    >
+                    <button onClick={() => setIdCardUser(u)} className="flex-grow md:w-14 md:h-14 py-3 md:py-0 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center text-lg shadow-lg hover:bg-amber-600 hover:text-white transition-all">🪪</button>
+                    <button onClick={() => startMessageUser(u)} className="flex-grow md:w-14 md:h-14 py-3 md:py-0 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center text-lg shadow-lg hover:bg-indigo-600 hover:text-white transition-all">💬</button>
+                    <button onClick={() => handleToggleBlock(u.id)} className={`flex-grow md:w-14 md:h-14 py-3 md:py-0 rounded-2xl flex items-center justify-center text-lg shadow-lg transition-all ${u.isBlocked ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white' : 'bg-amber-50 text-amber-600 hover:bg-amber-600 hover:text-white'}`}>
                       {u.isBlocked ? '🔓' : '🚫'}
                     </button>
-                    <button 
-                      onClick={() => handleRemoveUser(u.id)} 
-                      className="flex-grow md:w-14 md:h-14 py-3 md:py-0 bg-rose-50 text-rose-500 rounded-2xl flex items-center justify-center text-lg shadow-lg hover:bg-rose-600 hover:text-white transition-all"
-                      title="মুছে ফেলুন"
-                    >
-                      🗑️
-                    </button>
+                    <button onClick={() => handleRemoveUser(u.id)} className="flex-grow md:w-14 md:h-14 py-3 md:py-0 bg-rose-50 text-rose-500 rounded-2xl flex items-center justify-center text-lg shadow-lg hover:bg-rose-600 hover:text-white transition-all">🗑️</button>
                   </div>
                 </div>
               ))}
@@ -460,12 +369,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
               <div className="p-6 border-b bg-slate-50 font-black text-xs text-slate-400 uppercase tracking-widest">চ্যাট লিস্ট</div>
               {tickets.map(t => (
                 <div key={t.userId} onClick={() => setSelectedTicket(t)} className={`p-6 border-b cursor-pointer transition-all ${selectedTicket?.userId === t.userId ? 'bg-white shadow-xl border-r-4 border-indigo-600' : 'hover:bg-indigo-50'}`}>
-                  <div className="flex items-center gap-2">
-                    <div className="font-black text-slate-800 truncate">{t.userName}</div>
-                    {isOnline(users.find(u => u.id === t.userId)?.lastActive) && (
-                      <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping"></span>
-                    )}
-                  </div>
+                  <div className="font-black text-slate-800 truncate">{t.userName}</div>
                   <div className="text-[9px] font-bold text-slate-400 uppercase">ID: {t.userId}</div>
                 </div>
               ))}
@@ -474,12 +378,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
               {selectedTicket ? (
                 <>
                   <div className="p-6 border-b flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                       <h4 className="font-black text-slate-800">{selectedTicket.userName}</h4>
-                       {isOnline(users.find(u => u.id === selectedTicket.userId)?.lastActive) && (
-                         <span className="bg-emerald-100 text-emerald-600 text-[8px] font-black px-2 py-0.5 rounded-full uppercase">Online</span>
-                       )}
-                    </div>
+                    <h4 className="font-black text-slate-800">{selectedTicket.userName}</h4>
                   </div>
                   <div className="flex-grow p-8 overflow-y-auto space-y-4 bg-slate-50/30">
                     {selectedTicket.messages.map((m: any, i: number) => (
@@ -586,7 +485,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
                   <input 
                     type="file" 
                     accept="image/*" 
-                    onChange={(e) => handleFileSelect(e, 'customBanner', currentSizeAspect)} 
+                    onChange={(e) => handleFileSelect(e, 'customBanner', (bannerSizes.find(s => s.value === newBannerSize)?.aspect || 1))} 
                     className="w-full bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl p-3 text-xs" 
                   />
                 </div>
@@ -675,10 +574,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
                         <input type="file" accept="image/*" className="hidden" onChange={(e) => handleFileSelect(e, 'mainBanner', 5/1)} />
                       </label>
                     </div>
-                    <div className="flex-grow space-y-2">
-                       <p className="text-[10px] font-bold text-slate-400">হোম পেজের সবার উপরে এই ব্যানারটি শো করবে। ক্রপ করার সময় ৫:১ রেশিও ব্যবহার করুন।</p>
-                       {globalSettings.mainBannerImage && <button onClick={() => setGlobalSettings({...globalSettings, mainBannerImage: ''})} className="text-[9px] font-black text-rose-500 uppercase tracking-widest underline">ছবি মুছুন</button>}
-                    </div>
                   </div>
                 </div>
               </div>
@@ -686,33 +581,17 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
               <div className="bg-indigo-900 p-10 rounded-[3rem] shadow-xl text-white space-y-8 border-4 border-white/20">
                 <div className="flex items-center gap-4 border-b border-white/10 pb-4">
                   <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-xl">🛡️</div>
-                  <h3 className="text-xl font-black">৩. অ্যাডমিন অ্যাক্সেস সেটিংস (Login ID & Password)</h3>
+                  <h3 className="text-xl font-black">৩. অ্যাডমিন অ্যাক্সেস সেটিংস</h3>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div className="space-y-3">
-                    <label className="text-xs font-black text-indigo-300 uppercase tracking-widest ml-1">নতুন অ্যাডমিন লগইন আইডি</label>
-                    <input 
-                      className="w-full bg-white/10 border-2 border-white/10 rounded-2xl p-6 font-bold outline-none focus:border-white transition-all text-sm placeholder:text-white/20" 
-                      placeholder="যেমন: Rimon"
-                      value={adminCreds.id} 
-                      onChange={e => setAdminCreds({...adminCreds, id: e.target.value})} 
-                    />
+                    <label className="text-xs font-black text-indigo-300 uppercase tracking-widest ml-1">অ্যাডমিন আইডি</label>
+                    <input className="w-full bg-white/10 border-2 border-white/10 rounded-2xl p-6 font-bold outline-none focus:border-white transition-all text-sm" value={adminCreds.id} onChange={e => setAdminCreds({...adminCreds, id: e.target.value})} />
                   </div>
                   <div className="space-y-3">
-                    <label className="text-xs font-black text-indigo-300 uppercase tracking-widest ml-1">নতুন অ্যাডমিন পাসওয়ার্ড</label>
-                    <input 
-                      type="text"
-                      className="w-full bg-white/10 border-2 border-white/10 rounded-2xl p-6 font-bold outline-none focus:border-white transition-all text-sm placeholder:text-white/20" 
-                      placeholder="যেমন: 13457"
-                      value={adminCreds.pass} 
-                      onChange={e => setAdminCreds({...adminCreds, pass: e.target.value})} 
-                    />
+                    <label className="text-xs font-black text-indigo-300 uppercase tracking-widest ml-1">অ্যাডমিন পাসওয়ার্ড</label>
+                    <input type="text" className="w-full bg-white/10 border-2 border-white/10 rounded-2xl p-6 font-bold outline-none focus:border-white transition-all text-sm" value={adminCreds.pass} onChange={e => setAdminCreds({...adminCreds, pass: e.target.value})} />
                   </div>
-                </div>
-                <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                  <p className="text-[10px] font-bold text-indigo-200 leading-relaxed italic">
-                    <span className="text-amber-400">সতর্কতা:</span> এখানে ইউজার আইডি বা পাসওয়ার্ড পরিবর্তন করলে পরবর্তীবার লগইন করার সময় নতুন তথ্যগুলো ব্যবহার করতে হবে। সেভ করতে নিচের "সবগুলো সেটিংস সেভ করুন" বাটনে ক্লিক করুন।
-                  </p>
                 </div>
               </div>
 

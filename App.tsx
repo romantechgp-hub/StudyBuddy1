@@ -23,7 +23,7 @@ const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>(View.LOGIN);
   const [user, setUser] = useState<UserProfile | null>(null);
 
-  // Custom Navigation function to handle History API
+  // Custom Navigation function to handle History API (Kept for back button support)
   const navigateTo = (newView: View, replace: boolean = false) => {
     if (replace) {
       window.history.replaceState({ view: newView }, '', '');
@@ -31,8 +31,6 @@ const App: React.FC = () => {
       window.history.pushState({ view: newView }, '', '');
     }
     setCurrentView(newView);
-    // Update activity on navigation
-    updateHeartbeat();
   };
 
   const loadUserFromStorage = () => {
@@ -52,21 +50,6 @@ const App: React.FC = () => {
     }
   };
 
-  // Function to update lastActive time to simulate real-time presence
-  const updateHeartbeat = () => {
-    const session = localStorage.getItem('studybuddy_session_id');
-    const usersRaw = localStorage.getItem('studybuddy_registered_users');
-    if (session && usersRaw) {
-      const users: UserProfile[] = JSON.parse(usersRaw);
-      const updatedUsers = users.map(u => 
-        u.id === session ? { ...u, lastActive: new Date().toISOString() } : u
-      );
-      localStorage.setItem('studybuddy_registered_users', JSON.stringify(updatedUsers));
-      // Dispatch event to notify other components (like AdminPanel if open in another tab)
-      window.dispatchEvent(new CustomEvent('local-storage-update'));
-    }
-  };
-
   useEffect(() => {
     loadUserFromStorage();
     
@@ -76,13 +59,6 @@ const App: React.FC = () => {
     setCurrentView(startView);
     window.history.replaceState({ view: startView }, '', '');
 
-    // Heartbeat: Update activity every 30 seconds if user is logged in
-    const heartbeatInterval = setInterval(() => {
-      if (localStorage.getItem('studybuddy_session_id')) {
-        updateHeartbeat();
-      }
-    }, 30000);
-
     // Handle back button clicks
     const handlePopState = (event: PopStateEvent) => {
       if (event.state && event.state.view) {
@@ -90,7 +66,6 @@ const App: React.FC = () => {
       } else {
         setCurrentView(View.HOME);
       }
-      updateHeartbeat();
     };
 
     window.addEventListener('popstate', handlePopState);
@@ -103,7 +78,6 @@ const App: React.FC = () => {
     window.addEventListener('local-storage-update', handleStorageChange);
     
     return () => {
-      clearInterval(heartbeatInterval);
       window.removeEventListener('popstate', handlePopState);
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('local-storage-update', handleStorageChange);
