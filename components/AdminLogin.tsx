@@ -15,7 +15,8 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onBack, onLogin }) => {
     e.preventDefault();
     
     // Load admin credentials from localStorage or use defaults
-    const savedCreds = JSON.parse(localStorage.getItem('admin_credentials') || '{"id":"Rimon","pass":"13457@Roman"}');
+    // Default password set to "13457"
+    const savedCreds = JSON.parse(localStorage.getItem('admin_credentials') || '{"id":"Rimon","pass":"13457"}');
     
     if (identifier === savedCreds.id && password === savedCreds.pass) {
       onLogin();

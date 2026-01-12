@@ -21,7 +21,13 @@ const SupportChat: React.FC<SupportChatProps> = ({ onBack, userId, userName }) =
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    
+    // Mark as read when messages change or component mounts
+    if (messages.length > 0) {
+      localStorage.setItem(`support_read_count_${userId}`, messages.length.toString());
+      window.dispatchEvent(new CustomEvent('local-storage-update'));
+    }
+  }, [messages, userId]);
 
   const loadMessages = () => {
     const key = `support_chat_${userId}`;
@@ -29,7 +35,9 @@ const SupportChat: React.FC<SupportChatProps> = ({ onBack, userId, userName }) =
     if (saved) {
       const parsed = JSON.parse(saved);
       // Only update if messages length is different to avoid unnecessary re-renders
-      setMessages(prev => prev.length !== parsed.length ? parsed : prev);
+      if (prev => prev.length !== parsed.length) {
+        setMessages(parsed);
+      }
     }
   };
 
@@ -37,6 +45,9 @@ const SupportChat: React.FC<SupportChatProps> = ({ onBack, userId, userName }) =
     setMessages(newMsgs);
     localStorage.setItem(`support_chat_${userId}`, JSON.stringify(newMsgs));
     
+    // Update read count immediately for local user
+    localStorage.setItem(`support_read_count_${userId}`, newMsgs.length.toString());
+
     // Also save to a central 'tickets' key for admin
     const tickets = JSON.parse(localStorage.getItem('admin_tickets') || '[]');
     const ticketIdx = tickets.findIndex((t: any) => t.userId === userId);
@@ -48,6 +59,7 @@ const SupportChat: React.FC<SupportChatProps> = ({ onBack, userId, userName }) =
       tickets.push({ userId, userName, messages: newMsgs, lastUpdate: Date.now() });
     }
     localStorage.setItem('admin_tickets', JSON.stringify(tickets));
+    window.dispatchEvent(new CustomEvent('local-storage-update'));
   };
 
   const handleSend = () => {

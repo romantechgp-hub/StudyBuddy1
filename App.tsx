@@ -23,7 +23,7 @@ const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>(View.LOGIN);
   const [user, setUser] = useState<UserProfile | null>(null);
 
-  useEffect(() => {
+  const loadUserFromStorage = () => {
     const session = localStorage.getItem('studybuddy_session_id');
     const usersRaw = localStorage.getItem('studybuddy_registered_users');
     if (session && usersRaw) {
@@ -35,10 +35,32 @@ const App: React.FC = () => {
           alert('আপনার অ্যাকাউন্টটি ব্লক করা হয়েছে। অনুগ্রহ করে অ্যাডমিনের সাথে যোগাযোগ করুন।');
         } else {
           setUser(currentUser);
-          setCurrentView(View.HOME);
         }
       }
     }
+  };
+
+  useEffect(() => {
+    loadUserFromStorage();
+    
+    // Initial view set
+    const session = localStorage.getItem('studybuddy_session_id');
+    if (session && currentView === View.LOGIN) {
+      setCurrentView(View.HOME);
+    }
+
+    // Listener for storage changes (to sync data if Admin changes it)
+    const handleStorageChange = () => {
+      loadUserFromStorage();
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('local-storage-update', handleStorageChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('local-storage-update', handleStorageChange);
+    };
   }, []);
 
   const saveUserToStore = (updatedUser: UserProfile) => {
@@ -52,6 +74,7 @@ const App: React.FC = () => {
     }
     localStorage.setItem('studybuddy_registered_users', JSON.stringify(users));
     setUser(updatedUser);
+    window.dispatchEvent(new CustomEvent('local-storage-update'));
   };
 
   const handleLogout = () => {

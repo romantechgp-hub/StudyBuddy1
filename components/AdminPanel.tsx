@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { UserProfile, BannerImage, AdminLink, AdminNotice } from '../types';
 import ImageCropper from './ImageCropper';
+import UserIdCard from './UserIdCard';
 
 interface AdminPanelProps {
   onBack: () => void;
@@ -16,6 +17,9 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
   const [selectedTicket, setSelectedTicket] = useState<any>(null);
   const [reply, setReply] = useState('');
   const [activeTab, setActiveTab] = useState<'users' | 'support' | 'notices' | 'links' | 'banners' | 'settings'>('users');
+  
+  // ID Card State
+  const [idCardUser, setIdCardUser] = useState<UserProfile | null>(null);
 
   // Cropper States
   const [cropperImage, setCropperImage] = useState<string | null>(null);
@@ -48,7 +52,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
     adminEmail: 'romantechgp@gmail.com',
     adminBio: 'প্রতিটি শিশু যেন সহজে AI ব্যবহার করতে পারে তার জন্য এই ক্ষুদ্র প্রয়াস।',
     adminImage: '',
-    aiSystemInstruction: "You are a friendly AI friend for students named 'Buddy'. If the student speaks English with mistakes, DO NOT be rude. Gently correct their sentence in Bengali first, then reply to them in English. Always maintain a supportive and encouraging tone. Focus on daily life, school, interviews, and travel topics.",
+    aiSystemInstruction: "You are a friendly AI friend for students named 'Roman'. For every English sentence you say, you MUST provide its Bengali translation right after it. Gently correct any mistakes in Bengali first, then reply in dual-language (English + Bengali).",
     dailyRewardPoints: 10,
     footerText: '"প্রতিটি শিশু যেন সহজে AI ব্যবহার করতে পারে তার জন্য এই ক্ষুদ্র প্রয়াস"',
     mainBannerTitle: 'অ্যাডমিন',
@@ -59,17 +63,17 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
 
   const [adminCreds, setAdminCreds] = useState({
     id: 'Rimon',
-    pass: '13457@Roman'
+    pass: '13457'
   });
 
   useEffect(() => {
     loadData();
     const handleUpdate = () => loadData();
     window.addEventListener('storage', handleUpdate);
-    window.addEventListener('local-storage-update', handleUpdate);
+    window.addEventListener('local-storage-update', loadData);
     return () => {
       window.removeEventListener('storage', handleUpdate);
-      window.removeEventListener('local-storage-update', handleUpdate);
+      window.removeEventListener('local-storage-update', loadData);
     };
   }, []);
 
@@ -88,6 +92,13 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
   const syncStorage = (key: string, data: any) => {
     localStorage.setItem(key, JSON.stringify(data));
     window.dispatchEvent(new CustomEvent('local-storage-update'));
+  };
+
+  const updateGlobalUser = (updatedUser: UserProfile) => {
+    const updatedUsers = users.map(u => u.id === updatedUser.id ? updatedUser : u);
+    setUsers(updatedUsers);
+    syncStorage('studybuddy_registered_users', updatedUsers);
+    setIdCardUser(updatedUser);
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>, target: typeof cropperTarget, aspect: number = 1) => {
@@ -156,6 +167,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
   };
 
   const handleRemoveUser = (userId: string) => {
+    const confirm = window.confirm('আপনি কি নিশ্চিত যে এই ইউজারটিকে মুছে ফেলতে চান?');
+    if (!confirm) return;
     const updated = users.filter(u => u.id !== userId);
     setUsers(updated);
     syncStorage('studybuddy_registered_users', updated);
@@ -209,6 +222,21 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
     setReply('');
   };
 
+  const startMessageUser = (user: UserProfile) => {
+    // Find or create a ticket for this user
+    let ticket = tickets.find(t => t.userId === user.id);
+    if (!ticket) {
+      const key = `support_chat_${user.id}`;
+      const messages = JSON.parse(localStorage.getItem(key) || '[]');
+      ticket = { userId: user.id, userName: user.name, messages, lastUpdate: Date.now() };
+      const updatedTickets = [...tickets, ticket];
+      setTickets(updatedTickets);
+      localStorage.setItem('admin_tickets', JSON.stringify(updatedTickets));
+    }
+    setSelectedTicket(ticket);
+    setActiveTab('support');
+  };
+
   const saveGlobalSettings = () => {
     localStorage.setItem('global_settings', JSON.stringify(globalSettings));
     localStorage.setItem('admin_credentials', JSON.stringify(adminCreds));
@@ -236,6 +264,17 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
           aspect={cropperAspect} 
           onCropComplete={onCropComplete} 
           onCancel={() => setCropperImage(null)} 
+        />
+      )}
+
+      {/* ID Card Display */}
+      {idCardUser && (
+        <UserIdCard 
+          user={idCardUser} 
+          adminName={globalSettings.adminName} 
+          onClose={() => setIdCardUser(null)} 
+          isAdmin={true}
+          onUpdateUser={updateGlobalUser}
         />
       )}
 
@@ -267,19 +306,89 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
               <button onClick={handleCreateUser} className="w-full bg-indigo-600 text-white py-4 rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg shadow-indigo-100">ইউজার সেভ করুন</button>
             </div>
             
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-6 pb-10">
+              <h3 className="text-xl font-black text-slate-800 ml-2">নিবন্ধিত সকল ইউজার ({users.length})</h3>
               {users.map(u => (
-                <div key={u.id} className="bg-white border rounded-[2rem] p-6 shadow-sm flex items-center gap-4">
-                  <div className="w-16 h-16 rounded-2xl bg-indigo-50 overflow-hidden shrink-0 flex items-center justify-center">
-                    {u.profileImage ? <img src={u.profileImage} className="w-full h-full object-cover" /> : <span className="font-black text-indigo-300 text-xl">{u.name[0]}</span>}
+                <div key={u.id} className="bg-white border rounded-[2.5rem] p-8 shadow-xl hover:shadow-2xl transition-all flex flex-col md:flex-row gap-8 items-start relative group overflow-hidden">
+                  {/* Decorative corner for points */}
+                  <div className="absolute top-0 right-0 bg-indigo-600 text-white px-6 py-2 rounded-bl-[1.5rem] text-xs font-black shadow-lg">
+                    {u.points} PTS
                   </div>
-                  <div className="flex-grow min-w-0">
-                    <h4 className="font-black text-slate-800 text-lg truncate flex items-center gap-2">{u.name} {u.isBlocked && <span className="bg-rose-500 text-white text-[8px] px-2 py-0.5 rounded-full uppercase">ব্লকড</span>}</h4>
-                    <p className="text-[10px] text-slate-400 font-black uppercase truncate">ID: {u.id} | PASS: {u.password}</p>
+
+                  {/* Profile Section */}
+                  <div className="flex flex-col items-center gap-3 shrink-0 mx-auto md:mx-0">
+                    <div className="w-32 h-32 rounded-[2rem] border-4 border-slate-50 bg-indigo-50 overflow-hidden shadow-lg flex items-center justify-center">
+                      {u.profileImage ? (
+                        <img src={u.profileImage} className="w-full h-full object-cover" alt={u.name} />
+                      ) : (
+                        <span className="font-black text-indigo-200 text-5xl">{u.name[0]}</span>
+                      )}
+                    </div>
+                    <div className={`px-4 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${u.isBlocked ? 'bg-rose-500 text-white' : 'bg-emerald-100 text-emerald-600'}`}>
+                      {u.isBlocked ? 'ব্লকড' : 'সক্রিয়'}
+                    </div>
                   </div>
-                  <div className="flex gap-2">
-                    <button onClick={() => handleToggleBlock(u.id)} className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm shadow-sm ${u.isBlocked ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>{u.isBlocked ? '🔓' : '🚫'}</button>
-                    <button onClick={() => handleRemoveUser(u.id)} className="w-10 h-10 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center text-sm shadow-sm">🗑️</button>
+
+                  {/* Info Section */}
+                  <div className="flex-grow grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8 w-full">
+                    <div className="space-y-1">
+                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">পুরো নাম:</span>
+                      <p className="font-black text-slate-800 text-lg leading-none">{u.name}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">ইউজার আইডি (Login ID):</span>
+                      <p className="font-bold text-indigo-600 leading-none">{u.id}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">পাসওয়ার্ড:</span>
+                      <p className="font-bold text-slate-600 leading-none">{u.password}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">প্রতিষ্ঠান:</span>
+                      <p className="font-bold text-slate-600 leading-none">{u.institution || 'দেওয়া হয়নি'}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">শ্রেণী / গ্রেড:</span>
+                      <p className="font-bold text-slate-600 leading-none">{u.grade || 'দেওয়া হয়নি'}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">সবশেষ অ্যাক্টিভ:</span>
+                      <p className="text-[10px] font-bold text-slate-400 leading-none">
+                        {u.lastActive ? new Date(u.lastActive).toLocaleString('bn-BD') : 'তথ্য নেই'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Actions Section */}
+                  <div className="flex md:flex-col gap-3 shrink-0 self-center md:self-start w-full md:w-auto">
+                    <button 
+                      onClick={() => setIdCardUser(u)}
+                      className="flex-grow md:w-14 md:h-14 py-3 md:py-0 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center text-lg shadow-lg hover:bg-amber-600 hover:text-white transition-all"
+                      title="ID কার্ড তৈরি করুন"
+                    >
+                      🪪
+                    </button>
+                    <button 
+                      onClick={() => startMessageUser(u)}
+                      className="flex-grow md:w-14 md:h-14 py-3 md:py-0 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center text-lg shadow-lg hover:bg-indigo-600 hover:text-white transition-all"
+                      title="মেসেজ পাঠান"
+                    >
+                      💬
+                    </button>
+                    <button 
+                      onClick={() => handleToggleBlock(u.id)} 
+                      className={`flex-grow md:w-14 md:h-14 py-3 md:py-0 rounded-2xl flex items-center justify-center text-lg shadow-lg transition-all ${u.isBlocked ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white' : 'bg-amber-50 text-amber-600 hover:bg-amber-600 hover:text-white'}`}
+                      title={u.isBlocked ? 'আনব্লক করুন' : 'ব্লক করুন'}
+                    >
+                      {u.isBlocked ? '🔓' : '🚫'}
+                    </button>
+                    <button 
+                      onClick={() => handleRemoveUser(u.id)} 
+                      className="flex-grow md:w-14 md:h-14 py-3 md:py-0 bg-rose-50 text-rose-500 rounded-2xl flex items-center justify-center text-lg shadow-lg hover:bg-rose-600 hover:text-white transition-all"
+                      title="মুছে ফেলুন"
+                    >
+                      🗑️
+                    </button>
                   </div>
                 </div>
               ))}
@@ -471,9 +580,15 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
                       </div>
                    </div>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">ফুটার টেক্সট</label>
-                  <input className="w-full bg-slate-50 border-2 border-transparent focus:border-indigo-500 rounded-2xl p-6 font-bold outline-none text-xs" value={globalSettings.footerText} onChange={e => setGlobalSettings({...globalSettings, footerText: e.target.value})} />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">ফুটার টেক্সট</label>
+                    <input className="w-full bg-slate-50 border-2 border-transparent focus:border-indigo-500 rounded-2xl p-6 font-bold outline-none text-xs" value={globalSettings.footerText} onChange={e => setGlobalSettings({...globalSettings, footerText: e.target.value})} />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-black text-indigo-600 uppercase tracking-widest ml-1">ডেইলি রিওয়ার্ড পয়েন্ট (Reward Points)</label>
+                    <input type="number" className="w-full bg-indigo-50/50 border-2 border-indigo-100 focus:border-indigo-500 rounded-2xl p-6 font-bold outline-none text-sm" value={globalSettings.dailyRewardPoints} onChange={e => setGlobalSettings({...globalSettings, dailyRewardPoints: Number(e.target.value)})} />
+                  </div>
                 </div>
               </div>
 
@@ -521,7 +636,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
                     <input 
                       type="text"
                       className="w-full bg-white/10 border-2 border-white/10 rounded-2xl p-6 font-bold outline-none focus:border-white transition-all text-sm placeholder:text-white/20" 
-                      placeholder="যেমন: 13457@Roman"
+                      placeholder="যেমন: 13457"
                       value={adminCreds.pass} 
                       onChange={e => setAdminCreds({...adminCreds, pass: e.target.value})} 
                     />

@@ -32,6 +32,15 @@ export interface UserProfile {
   interests?: string[];
   themeColor?: string;
   isBlocked?: boolean;
+  // ID Card Persistence Fields
+  idCardTheme?: string;
+  idCardLayout?: string;
+  idCardIssuedBy?: string;
+  idCardBloodGroup?: string;
+  idCardPhone?: string;
+  idCardValidity?: string;
+  idCardIssueDate?: string;
+  idCardAddress?: string;
 }
 
 export interface BannerImage {
