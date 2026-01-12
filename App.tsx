@@ -87,6 +87,7 @@ const App: React.FC = () => {
     }
     localStorage.setItem('studybuddy_registered_users', JSON.stringify(users));
     setUser(updatedUser);
+    // Dispatch event so other components (like Admin Panel) know data changed
     window.dispatchEvent(new CustomEvent('local-storage-update'));
   };
 
