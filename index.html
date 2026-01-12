@@ -17,12 +17,6 @@
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
-    <script>
-      // Shim to prevent "process is not defined" error in the browser
-      if (typeof window !== 'undefined') {
-        window.process = window.process || { env: { NODE_ENV: 'production' } };
-      }
-    </script>
 <script type="importmap">
 {
   "imports": {
@@ -39,7 +33,6 @@
 </head>
 <body>
     <div id="root"></div>
-    <!-- Entry point script -->
     <script type="module" src="/index.tsx"></script>
 </body>
 </html>

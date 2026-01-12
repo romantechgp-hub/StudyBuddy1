@@ -11,12 +11,12 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    chunkSizeWarningLimit: 2000,
+    chunkSizeWarningLimit: 3000,
     rollupOptions: {
       output: {
         manualChunks: {
-          'vendor-genai': ['@google/genai'],
           'vendor-react': ['react', 'react-dom'],
+          'vendor-genai': ['@google/genai'],
           'vendor-utils': ['react-easy-crop']
         }
       }

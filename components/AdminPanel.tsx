@@ -61,18 +61,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
     pass: '13457'
   });
 
-  useEffect(() => {
-    loadData();
-    const handleUpdate = () => loadData();
-    window.addEventListener('storage', handleUpdate);
-    window.addEventListener('local-storage-update', loadData);
-    
-    return () => {
-      window.removeEventListener('storage', handleUpdate);
-      window.removeEventListener('local-storage-update', loadData);
-    };
-  }, []);
-
   const loadData = () => {
     const rawUsers = JSON.parse(localStorage.getItem('studybuddy_registered_users') || '[]');
     setUsers(rawUsers);
@@ -88,6 +76,18 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
     const savedCreds = localStorage.getItem('admin_credentials');
     if (savedCreds) setAdminCreds(JSON.parse(savedCreds));
   };
+
+  useEffect(() => {
+    loadData();
+    // Use interval to simulate "real time" updates across local state
+    const interval = setInterval(loadData, 2000);
+    window.addEventListener('local-storage-update', loadData);
+    
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('local-storage-update', loadData);
+    };
+  }, []);
 
   const syncStorage = (key: string, data: any) => {
     localStorage.setItem(key, JSON.stringify(data));
@@ -307,58 +307,62 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
             
             <div className="grid grid-cols-1 gap-6 pb-10">
               <h3 className="text-xl font-black text-slate-800 ml-2">নিবন্ধিত সকল ইউজার ({users.length})</h3>
-              {users.map(u => (
-                <div key={u.id} className="bg-white border border-slate-50 rounded-[2.5rem] p-8 shadow-xl hover:shadow-2xl transition-all flex flex-col md:flex-row gap-8 items-start relative group overflow-hidden">
-                  <div className="absolute top-0 right-0 bg-indigo-600 text-white px-6 py-2 rounded-bl-[1.5rem] text-xs font-black shadow-lg">
-                    {u.points} PTS
-                  </div>
+              {users.length === 0 ? (
+                 <div className="p-20 text-center text-slate-300 font-black uppercase">কোনো ইউজার নিবন্ধিত নেই</div>
+              ) : (
+                users.map(u => (
+                  <div key={u.id} className="bg-white border border-slate-50 rounded-[2.5rem] p-8 shadow-xl hover:shadow-2xl transition-all flex flex-col md:flex-row gap-8 items-start relative group overflow-hidden">
+                    <div className="absolute top-0 right-0 bg-indigo-600 text-white px-6 py-2 rounded-bl-[1.5rem] text-xs font-black shadow-lg">
+                      {u.points} PTS
+                    </div>
 
-                  <div className="flex flex-col items-center gap-3 shrink-0 mx-auto md:mx-0">
-                    <div className="w-32 h-32 rounded-[2rem] border-4 border-slate-50 bg-indigo-50 overflow-hidden shadow-lg flex items-center justify-center">
-                      {u.profileImage ? (
-                        <img src={u.profileImage} className="w-full h-full object-cover" alt={u.name} />
-                      ) : (
-                        <span className="font-black text-indigo-200 text-5xl">{u.name[0]}</span>
-                      )}
+                    <div className="flex flex-col items-center gap-3 shrink-0 mx-auto md:mx-0">
+                      <div className="w-32 h-32 rounded-[2rem] border-4 border-slate-50 bg-indigo-50 overflow-hidden shadow-lg flex items-center justify-center">
+                        {u.profileImage ? (
+                          <img src={u.profileImage} className="w-full h-full object-cover" alt={u.name} />
+                        ) : (
+                          <span className="font-black text-indigo-200 text-5xl">{u.name[0]}</span>
+                        )}
+                      </div>
+                      <div className={`px-4 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${u.isBlocked ? 'bg-rose-500 text-white' : 'bg-emerald-100 text-emerald-600'}`}>
+                        {u.isBlocked ? 'ব্লকড' : 'সক্রিয়'}
+                      </div>
                     </div>
-                    <div className={`px-4 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${u.isBlocked ? 'bg-rose-500 text-white' : 'bg-emerald-100 text-emerald-600'}`}>
-                      {u.isBlocked ? 'ব্লকড' : 'সক্রিয়'}
-                    </div>
-                  </div>
 
-                  <div className="flex-grow grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8 w-full">
-                    <div className="space-y-1">
-                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">পুরো নাম:</span>
-                      <p className="font-black text-slate-800 text-lg leading-none">{u.name}</p>
+                    <div className="flex-grow grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8 w-full">
+                      <div className="space-y-1">
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">পুরো নাম:</span>
+                        <p className="font-black text-slate-800 text-lg leading-none">{u.name}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">ইউজার আইডি (Login ID):</span>
+                        <p className="font-bold text-indigo-600 leading-none">{u.id}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">পাসওয়ার্ড:</span>
+                        <p className="font-bold text-slate-600 leading-none">{u.password}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">শ্রেণী / গ্রেড:</span>
+                        <p className="font-bold text-slate-600 leading-none">{u.grade || 'দেওয়া হয়নি'}</p>
+                      </div>
+                      <div className="col-span-1 sm:col-span-2 space-y-1">
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">প্রতিষ্ঠান:</span>
+                        <p className="font-bold text-slate-600 leading-none">{u.institution || 'দেওয়া হয়নি'}</p>
+                      </div>
                     </div>
-                    <div className="space-y-1">
-                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">ইউজার আইডি (Login ID):</span>
-                      <p className="font-bold text-indigo-600 leading-none">{u.id}</p>
-                    </div>
-                    <div className="space-y-1">
-                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">পাসওয়ার্ড:</span>
-                      <p className="font-bold text-slate-600 leading-none">{u.password}</p>
-                    </div>
-                    <div className="space-y-1">
-                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">শ্রেণী / গ্রেড:</span>
-                      <p className="font-bold text-slate-600 leading-none">{u.grade || 'দেওয়া হয়নি'}</p>
-                    </div>
-                    <div className="col-span-1 sm:col-span-2 space-y-1">
-                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">প্রতিষ্ঠান:</span>
-                      <p className="font-bold text-slate-600 leading-none">{u.institution || 'দেওয়া হয়নি'}</p>
-                    </div>
-                  </div>
 
-                  <div className="flex md:flex-col gap-3 shrink-0 self-center md:self-start w-full md:w-auto">
-                    <button onClick={() => setIdCardUser(u)} className="flex-grow md:w-14 md:h-14 py-3 md:py-0 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center text-lg shadow-lg hover:bg-amber-600 hover:text-white transition-all">🪪</button>
-                    <button onClick={() => startMessageUser(u)} className="flex-grow md:w-14 md:h-14 py-3 md:py-0 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center text-lg shadow-lg hover:bg-indigo-600 hover:text-white transition-all">💬</button>
-                    <button onClick={() => handleToggleBlock(u.id)} className={`flex-grow md:w-14 md:h-14 py-3 md:py-0 rounded-2xl flex items-center justify-center text-lg shadow-lg transition-all ${u.isBlocked ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white' : 'bg-amber-50 text-amber-600 hover:bg-amber-600 hover:text-white'}`}>
-                      {u.isBlocked ? '🔓' : '🚫'}
-                    </button>
-                    <button onClick={() => handleRemoveUser(u.id)} className="flex-grow md:w-14 md:h-14 py-3 md:py-0 bg-rose-50 text-rose-500 rounded-2xl flex items-center justify-center text-lg shadow-lg hover:bg-rose-600 hover:text-white transition-all">🗑️</button>
+                    <div className="flex md:flex-col gap-3 shrink-0 self-center md:self-start w-full md:w-auto">
+                      <button onClick={() => setIdCardUser(u)} className="flex-grow md:w-14 md:h-14 py-3 md:py-0 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center text-lg shadow-lg hover:bg-amber-600 hover:text-white transition-all">🪪</button>
+                      <button onClick={() => startMessageUser(u)} className="flex-grow md:w-14 md:h-14 py-3 md:py-0 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center text-lg shadow-lg hover:bg-indigo-600 hover:text-white transition-all">💬</button>
+                      <button onClick={() => handleToggleBlock(u.id)} className={`flex-grow md:w-14 md:h-14 py-3 md:py-0 rounded-2xl flex items-center justify-center text-lg shadow-lg transition-all ${u.isBlocked ? 'bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white' : 'bg-amber-50 text-amber-600 hover:bg-amber-600 hover:text-white'}`}>
+                        {u.isBlocked ? '🔓' : '🚫'}
+                      </button>
+                      <button onClick={() => handleRemoveUser(u.id)} className="flex-grow md:w-14 md:h-14 py-3 md:py-0 bg-rose-50 text-rose-500 rounded-2xl flex items-center justify-center text-lg shadow-lg hover:bg-rose-600 hover:text-white transition-all">🗑️</button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
         )}
@@ -367,12 +371,16 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
           <div className="h-full flex">
             <div className="w-1/3 border-r border-slate-200 overflow-y-auto bg-white/50">
               <div className="p-6 border-b bg-slate-50 font-black text-xs text-slate-400 uppercase tracking-widest">চ্যাট লিস্ট</div>
-              {tickets.map(t => (
-                <div key={t.userId} onClick={() => setSelectedTicket(t)} className={`p-6 border-b cursor-pointer transition-all ${selectedTicket?.userId === t.userId ? 'bg-white shadow-xl border-r-4 border-indigo-600' : 'hover:bg-indigo-50'}`}>
-                  <div className="font-black text-slate-800 truncate">{t.userName}</div>
-                  <div className="text-[9px] font-bold text-slate-400 uppercase">ID: {t.userId}</div>
-                </div>
-              ))}
+              {tickets.length === 0 ? (
+                <div className="p-10 text-center text-slate-300 text-[10px] font-black uppercase">কোনো বার্তা নেই</div>
+              ) : (
+                tickets.map(t => (
+                  <div key={t.userId} onClick={() => setSelectedTicket(t)} className={`p-6 border-b cursor-pointer transition-all ${selectedTicket?.userId === t.userId ? 'bg-white shadow-xl border-r-4 border-indigo-600' : 'hover:bg-indigo-50'}`}>
+                    <div className="font-black text-slate-800 truncate">{t.userName}</div>
+                    <div className="text-[9px] font-bold text-slate-400 uppercase">ID: {t.userId}</div>
+                  </div>
+                ))
+              )}
             </div>
             <div className="w-2/3 flex flex-col bg-white">
               {selectedTicket ? (
@@ -392,7 +400,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
                     <button onClick={handleReply} className="bg-indigo-600 text-white px-8 rounded-2xl font-black text-xs uppercase tracking-widest">পাঠান</button>
                   </div>
                 </>
-              ) : <div className="flex-grow flex items-center justify-center text-slate-300 font-black">মেসেজ দেখতে ইউজার সিলেক্ট করুন</div>}
+              ) : <div className="flex-grow flex items-center justify-center text-slate-300 font-black uppercase text-xs">মেসেজ দেখতে ইউজার সিলেক্ট করুন</div>}
             </div>
           </div>
         )}
