@@ -1,0 +1,8 @@
+{
+  "name": "StudyBuddy",
+  "description": "পড়াশোনা সহজ করা এবং ইংলিশ স্পিকিং প্র্যাকটিস করার জন্য একটি এআই ভিত্তিক স্টুডেন্ট ফ্রেন্ডলি অ্যাপ্লিকেশন।",
+  "requestFramePermissions": [
+    "microphone",
+    "camera"
+  ]
+}
