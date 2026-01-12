@@ -61,3 +61,11 @@ export interface AdminLink {
   url: string;
   timestamp: number;
 }
+
+export interface AdminNotice {
+  id: string;
+  title: string;
+  content: string;
+  timestamp: number;
+  type: 'info' | 'warning' | 'success';
+}

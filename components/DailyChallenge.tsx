@@ -1,10 +1,10 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { studyService } from '../services/gemini';
 
 interface DailyChallengeProps {
   onBack: () => void;
-  onComplete: () => void;
+  onComplete: (points: number) => void;
 }
 
 const DailyChallenge: React.FC<DailyChallengeProps> = ({ onBack, onComplete }) => {
@@ -13,6 +13,16 @@ const DailyChallenge: React.FC<DailyChallengeProps> = ({ onBack, onComplete }) =
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState<{ text: string, type: 'success' | 'error' | null }>({ text: '', type: null });
   const [isClaimed, setIsClaimed] = useState(false);
+  const [rewardPoints, setRewardPoints] = useState(10);
+  const [isRecording, setIsRecording] = useState(false);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('global_settings');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (parsed.dailyRewardPoints) setRewardPoints(parsed.dailyRewardPoints);
+    }
+  }, []);
 
   const handleCheck = async () => {
     if (!input.trim() || sentences.length >= 3) return;
@@ -38,9 +48,28 @@ const DailyChallenge: React.FC<DailyChallengeProps> = ({ onBack, onComplete }) =
     }
   };
 
+  const startListening = () => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("দুঃখিত, আপনার ব্রাউজার স্পিচ রিকগনিশন সাপোর্ট করে না।");
+      return;
+    }
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.onstart = () => setIsRecording(true);
+    recognition.onend = () => setIsRecording(false);
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      setInput(transcript);
+    };
+    recognition.start();
+  };
+
   const handleClaim = () => {
-    onComplete();
+    onComplete(rewardPoints);
     setIsClaimed(true);
+    // After claiming, we trigger an update in the app state
+    window.dispatchEvent(new CustomEvent('local-storage-update'));
   };
 
   const isCompleted = sentences.length >= 3;
@@ -63,7 +92,7 @@ const DailyChallenge: React.FC<DailyChallengeProps> = ({ onBack, onComplete }) =
             </div>
           </div>
           <div className="bg-amber-100 text-amber-700 px-4 py-2 rounded-2xl font-black text-sm flex items-center gap-2">
-            REWARD: +10 pts
+            REWARD: +{rewardPoints} pts
           </div>
         </div>
 
@@ -98,23 +127,23 @@ const DailyChallenge: React.FC<DailyChallengeProps> = ({ onBack, onComplete }) =
           {!isCompleted ? (
             <div className="space-y-6">
               <div className="bg-indigo-50/50 p-6 rounded-[2rem] border border-indigo-100/50 text-center">
-                <p className="text-indigo-900 font-bold">৩টি সঠিক ইংরেজি বাক্য লিখলেই ১০ পয়েন্ট!</p>
+                <p className="text-indigo-900 font-bold">৩টি সঠিক ইংরেজি বাক্য লিখলেই {rewardPoints} পয়েন্ট!</p>
                 <p className="text-indigo-500 text-sm mt-1">প্রতিটি বাক্য অন্তত ৩টি শব্দের হতে হবে।</p>
               </div>
 
-              <div className="relative">
+              <div className="relative group">
                 <textarea
-                  className="w-full bg-slate-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-[2rem] p-8 outline-none h-40 text-xl text-center font-bold text-slate-800 placeholder:text-slate-200 transition-all duration-300 shadow-inner"
-                  placeholder="এখানে লেখো..."
+                  className="w-full bg-slate-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-[2rem] p-10 outline-none h-40 text-sm text-center font-bold text-slate-800 placeholder:text-slate-200 transition-all duration-300 shadow-inner resize-none"
+                  placeholder="এখানে লেখো অথবা মুখে বলো..."
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   disabled={loading}
                 />
                 <button 
-                  onClick={() => alert('ভয়েস ইনপুট ফিচারটি শীঘ্রই আসছে!')}
-                  className="absolute bottom-4 right-4 w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-slate-400 hover:text-indigo-600 shadow-sm transition-all"
+                  onClick={startListening}
+                  className={`absolute bottom-6 right-6 w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg transition-all ${isRecording ? 'bg-rose-500 text-white animate-pulse' : 'bg-white text-indigo-600 hover:scale-110'}`}
                 >
-                  🎤
+                  {isRecording ? '⏹' : '🎤'}
                 </button>
               </div>
 
@@ -153,27 +182,14 @@ const DailyChallenge: React.FC<DailyChallengeProps> = ({ onBack, onComplete }) =
                     : 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-indigo-200'
                 }`}
               >
-                {isClaimed ? 'পয়েন্ট সংগ্রহ করা হয়েছে ✓' : 'পুরস্কার গ্রহণ করো (+১০ পয়েন্ট)'}
+                {isClaimed ? 'পয়েন্ট সংগ্রহ করা হয়েছে ✓' : `পুরস্কার গ্রহণ করো (+${rewardPoints} পয়েন্ট)`}
               </button>
-              
-              {isClaimed && (
-                <button 
-                  onClick={onBack}
-                  className="text-indigo-600 font-black text-sm uppercase tracking-widest hover:underline transition-all"
-                >
-                  ড্যাশবোর্ডে ফিরে যাও
-                </button>
-              )}
             </div>
           )}
         </div>
-
-        {/* Decor */}
-        <div className="absolute top-[-10%] right-[-10%] w-64 h-64 bg-slate-50 rounded-full blur-3xl -z-0"></div>
       </div>
     </div>
   );
 };
 
-// Fixed: Add default export
 export default DailyChallenge;

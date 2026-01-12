@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, UserProfile } from './types';
 import Header from './components/Header';
-import Banner from './components/Banner';
 import Footer from './components/Footer';
 import Home from './components/Home';
 import StudyMode from './components/StudyMode';
@@ -122,7 +121,7 @@ const App: React.FC = () => {
       case View.SPELLING_CHECKER: return <SpellingChecker onBack={() => setCurrentView(View.HOME)} />;
       case View.SCRIPT_WRITER: return <ScriptWriter onBack={() => setCurrentView(View.HOME)} />;
       case View.SUPPORT_CHAT: return <SupportChat onBack={() => setCurrentView(View.HOME)} userId={user.id} userName={user.name} />;
-      case View.DAILY_CHALLENGE: return <DailyChallenge onBack={() => setCurrentView(View.HOME)} onComplete={() => addPoints(10)} />;
+      case View.DAILY_CHALLENGE: return <DailyChallenge onBack={() => setCurrentView(View.HOME)} onComplete={(pts) => addPoints(pts)} />;
       case View.ADMIN_LOGIN: return <AdminLogin onBack={() => setCurrentView(View.HOME)} onLogin={() => setCurrentView(View.ADMIN_PANEL)} />;
       case View.ADMIN_PANEL: return <AdminPanel onBack={() => setCurrentView(View.HOME)} />;
       case View.PROFILE: return <Profile onBack={() => setCurrentView(View.HOME)} user={user} onUpdate={handleUpdateProfile} onLogout={handleLogout} />;
@@ -133,7 +132,6 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
       {user && <Header user={user} setView={setCurrentView} />}
-      <Banner />
       <main className="flex-grow container mx-auto px-4 py-6 max-w-4xl">
         {renderView()}
       </main>

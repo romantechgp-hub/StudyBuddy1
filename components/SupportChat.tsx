@@ -96,7 +96,7 @@ const SupportChat: React.FC<SupportChatProps> = ({ onBack, userId, userName }) =
 
       <div className="p-6 border-t border-slate-100 bg-white flex gap-3">
         <input
-          className="flex-grow bg-slate-50 border-2 border-transparent focus:border-indigo-500 rounded-2xl px-6 py-4 outline-none transition-all font-bold text-slate-800"
+          className="flex-grow bg-slate-50 border-2 border-transparent focus:border-indigo-500 rounded-2xl px-8 py-6 outline-none transition-all font-bold text-slate-800 text-sm"
           placeholder="তোমার সমস্যা লেখো..."
           value={input}
           onChange={(e) => setInput(e.target.value)}

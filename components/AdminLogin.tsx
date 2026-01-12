@@ -39,7 +39,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onBack, onLogin }) => {
           <label className="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-widest ml-1">অ্যাডমিন ইউজার আইডি:</label>
           <input
             type="text"
-            className="w-full bg-slate-50 border-2 border-transparent rounded-2xl p-4 focus:border-indigo-500 focus:bg-white outline-none transition-all font-bold"
+            className="w-full bg-slate-50 border-2 border-transparent rounded-2xl p-6 focus:border-indigo-500 focus:bg-white outline-none transition-all font-bold text-sm"
             placeholder="আপনার আইডি দিন"
             value={identifier}
             onChange={(e) => setIdentifier(e.target.value)}
@@ -49,7 +49,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onBack, onLogin }) => {
           <label className="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-widest ml-1">পাসওয়ার্ড:</label>
           <input
             type="password"
-            className="w-full bg-slate-50 border-2 border-transparent rounded-2xl p-4 focus:border-indigo-500 focus:bg-white outline-none transition-all font-bold"
+            className="w-full bg-slate-50 border-2 border-transparent rounded-2xl p-6 focus:border-indigo-500 focus:bg-white outline-none transition-all font-bold text-sm"
             placeholder="আপনার পাসওয়ার্ড দিন"
             value={password}
             onChange={(e) => setPassword(e.target.value)}

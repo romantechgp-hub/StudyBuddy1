@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, UserProfile } from '../types';
 
 interface HeaderProps {
@@ -8,6 +8,29 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ user, setView }) => {
+  const [settings, setSettings] = useState({
+    appName: 'স্টাডিবাডি',
+    appSubtitle: 'আপনার পড়াশোনার বন্ধু',
+    appLogo: ''
+  });
+
+  useEffect(() => {
+    const loadSettings = () => {
+      const saved = localStorage.getItem('global_settings');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        setSettings({
+          appName: parsed.appName || 'স্টাডিবাডি',
+          appSubtitle: parsed.appSubtitle || 'আপনার পড়াশোনার বন্ধু',
+          appLogo: parsed.appLogo || ''
+        });
+      }
+    };
+    loadSettings();
+    window.addEventListener('local-storage-update', loadSettings);
+    return () => window.removeEventListener('local-storage-update', loadSettings);
+  }, []);
+
   return (
     <header className="bg-white/80 backdrop-blur-md border-b border-slate-100 sticky top-0 z-50 transition-all duration-300">
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
@@ -15,12 +38,16 @@ const Header: React.FC<HeaderProps> = ({ user, setView }) => {
           className="flex items-center gap-3 cursor-pointer group" 
           onClick={() => setView(View.HOME)}
         >
-          <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-200 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
-            <span className="text-white font-black text-xl">📖</span>
+          <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-200 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 overflow-hidden">
+            {settings.appLogo ? (
+              <img src={settings.appLogo} alt="Logo" className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-white font-black text-xl">📖</span>
+            )}
           </div>
           <div className="flex flex-col">
-            <h1 className="text-xl font-black text-slate-800 tracking-tight leading-none">স্টাডিবাডি</h1>
-            <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest mt-1">আপনার পড়াশোনার বন্ধু</span>
+            <h1 className="text-xl font-black text-slate-800 tracking-tight leading-none">{settings.appName}</h1>
+            <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest mt-1">{settings.appSubtitle}</span>
           </div>
         </div>
         
@@ -51,7 +78,6 @@ const Header: React.FC<HeaderProps> = ({ user, setView }) => {
               <p className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase leading-none mb-0.5">Points</p>
               <p className="text-xs sm:text-sm font-black text-indigo-600 leading-none">{user.points}</p>
             </div>
-            {/* Fallback for very small screens to show points */}
             <div className="xs:hidden font-black text-indigo-600 text-[10px]">{user.points}</div>
           </div>
         </div>

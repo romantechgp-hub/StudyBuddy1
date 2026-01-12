@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface LoginProps {
   onLogin: (id: string, pass: string) => string | null;
@@ -10,6 +10,23 @@ const Login: React.FC<LoginProps> = ({ onLogin, onGoToRegister }) => {
   const [userId, setUserId] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [settings, setSettings] = useState({
+    appName: 'স্টাডিবাডি',
+    appSubtitle: 'আপনার পড়াশোনার বন্ধু',
+    appLogo: ''
+  });
+
+  useEffect(() => {
+    const saved = localStorage.getItem('global_settings');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      setSettings({
+        appName: parsed.appName || 'স্টাডিবাডি',
+        appSubtitle: parsed.appSubtitle || 'আপনার পড়াশোনার বন্ধু',
+        appLogo: parsed.appLogo || ''
+      });
+    }
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,10 +41,16 @@ const Login: React.FC<LoginProps> = ({ onLogin, onGoToRegister }) => {
     <div className="max-w-md mx-auto mt-10 animate-in fade-in slide-in-from-bottom-6 duration-700">
       <div className="bg-white p-10 rounded-[2.5rem] shadow-2xl border border-slate-100">
         <div className="text-center mb-10">
-          <div className="w-20 h-20 bg-indigo-600 rounded-3xl flex items-center justify-center text-white text-4xl font-black mx-auto shadow-xl shadow-indigo-100 mb-6">📖</div>
-          <h2 className="text-3xl font-black text-slate-800">স্টাডিবাডি-তে লগইন করুন</h2>
+          <div className="w-20 h-20 bg-indigo-600 rounded-3xl flex items-center justify-center text-white text-4xl font-black mx-auto shadow-xl shadow-indigo-100 mb-6 overflow-hidden">
+            {settings.appLogo ? (
+              <img src={settings.appLogo} className="w-full h-full object-cover" alt="Logo" />
+            ) : (
+              <span>📖</span>
+            )}
+          </div>
+          <h2 className="text-3xl font-black text-slate-800">{settings.appName}-তে লগইন করুন</h2>
           <p className="text-slate-500 mt-3 font-medium text-lg leading-relaxed">
-            আপনার পড়াশোনার বন্ধু
+            {settings.appSubtitle}
           </p>
         </div>
 
@@ -36,7 +59,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, onGoToRegister }) => {
             <label className="block text-sm font-bold text-slate-700 mb-2">ইউজার আইডি:</label>
             <input
               type="text"
-              className="w-full bg-slate-50 border-2 border-transparent rounded-2xl p-4 focus:border-indigo-500 focus:bg-white outline-none transition-all font-bold"
+              className="w-full bg-slate-50 border-2 border-transparent rounded-2xl p-6 focus:border-indigo-500 focus:bg-white outline-none transition-all font-bold text-sm"
               placeholder="আপনার ইউজার আইডি দিন"
               value={userId}
               onChange={(e) => setUserId(e.target.value)}
@@ -48,7 +71,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, onGoToRegister }) => {
             <label className="block text-sm font-bold text-slate-700 mb-2">পাসওয়ার্ড:</label>
             <input
               type="password"
-              className="w-full bg-slate-50 border-2 border-transparent rounded-2xl p-4 focus:border-indigo-500 focus:bg-white outline-none transition-all font-bold"
+              className="w-full bg-slate-50 border-2 border-transparent rounded-2xl p-6 focus:border-indigo-500 focus:bg-white outline-none transition-all font-bold text-sm"
               placeholder="আপনার পাসওয়ার্ড দিন"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
