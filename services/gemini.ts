@@ -1,14 +1,7 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 
-// Initialize AI exclusively using process.env.API_KEY
-const getAI = () => {
-  const apiKey = process.env.API_KEY;
-  if (!apiKey) {
-    console.error("API_KEY is missing. Please set it in your environment variables.");
-  }
-  return new GoogleGenAI({ apiKey: apiKey || '' });
-};
+// Standard initialization strictly using process.env.API_KEY
+const getAI = () => new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
 
 export const studyService = {
   async explainTopic(topic: string, level: 'basic' | 'standard') {
@@ -16,18 +9,18 @@ export const studyService = {
     const prompt = `Explain the following topic in simple Bengali: "${topic}". 
     Target Audience: Student. 
     Detail Level: ${level === 'basic' ? 'Beginner/Children' : 'Standard'}.
-    Include: 1. Simple definition. 2. Story/Example. 3. English terms.
-    Language: Bengali.`;
+    Include: 1. Simple definition. 2. Relatable story or example. 3. English terms where necessary.
+    Output: Pure Bengali text.`;
 
     try {
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
       });
-      return response.text || 'কোনো উত্তর পাওয়া যায়নি।';
+      return response.text || 'দুঃখিত, কোনো উত্তর পাওয়া যায়নি।';
     } catch (e) {
       console.error("Explain Topic Error:", e);
-      return 'দুঃখিত, ব্যাখ্যা তৈরি করতে সমস্যা হয়েছে।';
+      return 'দুঃখিত, ব্যাখ্যা তৈরি করতে সমস্যা হয়েছে। দয়া করে ইন্টাররেট চেক করো।';
     }
   },
 
@@ -40,23 +33,23 @@ export const studyService = {
           role: 'user',
           parts: [
             { inlineData: { mimeType: 'image/jpeg', data: base64Image.split(',')[1] } },
-            { text: `Identify and explain this topic in simple Bengali (level: ${level}).` }
+            { text: `Identify and explain the main educational topic in this image in simple Bengali (level: ${level}).` }
           ]
         }],
       });
-      return response.text || 'কোনো উত্তর পাওয়া যায়নি।';
+      return response.text || 'দুঃখিত, ছবিটি বিশ্লেষণ করা যায়নি।';
     } catch (e) {
       console.error("Image Explain Error:", e);
-      return 'ছবিটি বিশ্লেষণ করতে সমস্যা হয়েছে।';
+      return 'ছবিটি বিশ্লেষণ করতে সমস্যা হয়েছে। আবার চেষ্টা করো।';
     }
   },
 
   async solveMath(problem: string) {
     const ai = getAI();
-    const prompt = `Solve this math problem: "${problem}". Provide step-by-step Bengali explanation. Clean formatting.`;
+    const prompt = `Solve this math problem: "${problem}". Provide step-by-step Bengali explanation. Do not use LaTeX markers like $ signs.`;
     try {
       const response = await ai.models.generateContent({
-        model: 'gemini-3-pro-preview',
+        model: 'gemini-3-pro-preview', // Using Pro for complex math reasoning
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
       });
       return response.text?.replace(/\$/g, '') || 'সমাধান পাওয়া যায়নি।';
@@ -75,7 +68,7 @@ export const studyService = {
           role: 'user',
           parts: [
             { inlineData: { mimeType: 'image/jpeg', data: base64Image.split(',')[1] } },
-            { text: "Solve this math problem with step-by-step Bengali explanation." }
+            { text: "Solve this math problem from the image with step-by-step Bengali explanation." }
           ]
         }],
       });
@@ -90,7 +83,7 @@ export const studyService = {
     const ai = getAI();
     const fromLang = direction === 'bn-en' ? 'Bengali' : 'English';
     const toLang = direction === 'bn-en' ? 'English' : 'Bengali';
-    const prompt = `Translate this ${fromLang} text to ${toLang}: "${text}". Provide JSON: translation, pronunciation, explanation.`;
+    const prompt = `Translate this ${fromLang} text to ${toLang}: "${text}". Provide response in JSON: translation, pronunciation, explanation.`;
 
     try {
       const response = await ai.models.generateContent({
@@ -118,7 +111,7 @@ export const studyService = {
 
   async translateAndPronounceWithImage(base64Image: string, direction: 'bn-en' | 'en-bn') {
     const ai = getAI();
-    const prompt = `Detect and translate the text in this image. JSON: translation, pronunciation, explanation.`;
+    const prompt = `Detect text in image and translate it. Provide JSON: translation, pronunciation, explanation.`;
     try {
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
@@ -150,7 +143,7 @@ export const studyService = {
 
   async generateScript(topic: string, language: 'bn' | 'en') {
     const ai = getAI();
-    const prompt = `Write a script about "${topic}" in ${language === 'bn' ? 'Bengali' : 'English'}.`;
+    const prompt = `Write a creative script for a presentation or video about "${topic}" in ${language === 'bn' ? 'Bengali' : 'English'}.`;
     try {
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
@@ -159,13 +152,13 @@ export const studyService = {
       return response.text;
     } catch (e) {
       console.error("Script Error:", e);
-      return 'স্ক্রিপ্ট তৈরি করা যায়নি।';
+      return 'দুঃখিত, স্ক্রিপ্ট তৈরি করা যায়নি।';
     }
   },
 
   async validateEnglishSentence(sentence: string) {
     const ai = getAI();
-    const prompt = `Validate this English sentence: "${sentence}". JSON: isValid, correction, feedback.`;
+    const prompt = `Check if this English sentence is correct: "${sentence}". Provide JSON response: isValid (boolean), correction (string), feedback (string in Bengali).`;
     try {
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
@@ -191,7 +184,7 @@ export const studyService = {
 
   async checkSpelling(text: string, language: 'bn' | 'en') {
     const ai = getAI();
-    const prompt = `Check spelling of this ${language === 'bn' ? 'Bengali' : 'English'} text: "${text}". JSON: original, corrected, differences, explanation.`;
+    const prompt = `Check spelling and grammar of this ${language === 'bn' ? 'Bengali' : 'English'} text: "${text}". Provide JSON: original, corrected, differences, explanation (in Bengali).`;
     try {
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
@@ -225,7 +218,7 @@ export const studyService = {
           role: 'user',
           parts: [
             { inlineData: { mimeType: 'image/jpeg', data: base64Image.split(',')[1] } },
-            { text: `Check spelling of detected text in image. JSON: original, corrected, differences, explanation.` }
+            { text: `Check spelling of detected text in image. Language: ${language}. Provide JSON: original, corrected, differences, explanation.` }
           ]
         }],
         config: {
@@ -253,7 +246,7 @@ export const studyService = {
     try {
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
-        contents: [{ role: 'user', parts: [{ text: `Answer in Bengali: "${question}"` }] }],
+        contents: [{ role: 'user', parts: [{ text: `Answer this question briefly in Bengali: "${question}"` }] }],
       });
       return response.text;
     } catch (e) {
@@ -271,7 +264,7 @@ export const studyService = {
           role: 'user',
           parts: [
             { inlineData: { mimeType: 'image/jpeg', data: base64Image.split(',')[1] } },
-            { text: "Explain what is happening in this image in Bengali." }
+            { text: "Answer questions based on this image in Bengali." }
           ]
         }],
       });
@@ -285,7 +278,7 @@ export const studyService = {
   async chatWithFriend(history: any[], message: string) {
     const ai = getAI();
     const saved = localStorage.getItem('global_settings');
-    let sys = "You are Roman, a friendly English tutor. Gently correct mistakes in Bengali, then reply with English + Bengali translation.";
+    let sys = "You are Roman, a friendly AI tutor for students. Gently correct English mistakes in Bengali, then reply with English and its Bengali translation in brackets.";
     if (saved) {
       const parsed = JSON.parse(saved);
       if (parsed.aiSystemInstruction) sys = parsed.aiSystemInstruction;
@@ -302,7 +295,7 @@ export const studyService = {
       return response.text;
     } catch (e) {
       console.error("Chat Error:", e);
-      return 'দুঃখিত বন্ধু, আমার নেটওয়ার্কে সমস্যা হচ্ছে।';
+      return 'দুঃখিত বন্ধু, নেটওয়ার্কে সমস্যা হচ্ছে। একটু পর আবার বলো।';
     }
   }
 };
