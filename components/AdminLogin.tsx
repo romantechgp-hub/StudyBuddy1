@@ -15,7 +15,6 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onBack, onLogin }) => {
     e.preventDefault();
     
     // Load admin credentials from localStorage or use defaults
-    // Default password set to "13457"
     const savedCreds = JSON.parse(localStorage.getItem('admin_credentials') || '{"id":"Rimon","pass":"13457"}');
     
     if (identifier === savedCreds.id && password === savedCreds.pass) {
@@ -31,7 +30,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onBack, onLogin }) => {
         <div className="w-20 h-20 bg-indigo-600 rounded-[2rem] flex items-center justify-center mx-auto text-white text-4xl shadow-xl shadow-indigo-100 mb-6">🔐</div>
         <h2 className="text-3xl font-black text-slate-800">অ্যাডমিন লগইন</h2>
         <div className="bg-rose-50 text-rose-600 p-4 rounded-2xl mt-6 text-sm font-bold border border-rose-100">
-          ⚠️ নোটিশ: শুধুমাত্র অ্যাডমিন রিমন মাহমুদ রোমান লগইন করতে পারবেন।
+          ⚠️ নোটিশ: শুধুমাত্র অনুমোদিত অ্যাডমিন লগইন করতে পারবেন।
         </div>
       </div>
 

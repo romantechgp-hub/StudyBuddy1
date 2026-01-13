@@ -23,13 +23,16 @@ const MathSolver: React.FC<MathSolverProps> = ({ onBack }) => {
     try {
       let solution = '';
       if (capturedImage) {
+        // Log image size for debugging
+        console.log("Processing Image Math...");
         solution = await studyService.solveMathWithImage(capturedImage);
       } else {
         solution = await studyService.solveMath(problem);
       }
       setResult(solution || '');
     } catch (error) {
-      setResult('অংকটি সমাধান করতে সমস্যা হয়েছে। দয়া করে আবার চেষ্টা করো।');
+      console.error("Solver Component Error:", error);
+      setResult('অংকটি সমাধান করতে সমস্যা হয়েছে। সম্ভবত সার্ভারে লোড বেশি অথবা ইন্টারনেটে সমস্যা। দয়া করে আবার চেষ্টা করো।');
     } finally {
       setLoading(false);
     }
@@ -53,7 +56,7 @@ const MathSolver: React.FC<MathSolverProps> = ({ onBack }) => {
   };
 
   const startListening = () => {
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitRecognition;
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) {
       alert("দুঃখিত, আপনার ব্রাউজার স্পিচ রিকগনিশন সাপোর্ট করে না।");
       return;
@@ -80,7 +83,7 @@ const MathSolver: React.FC<MathSolverProps> = ({ onBack }) => {
       {cropperSrc && (
         <ImageCropper 
           image={cropperSrc} 
-          aspect={1} 
+          aspect={1.5} // Using 1.5 aspect ratio for longer equations
           onCropComplete={onCropComplete} 
           onCancel={() => setCropperSrc(null)} 
         />

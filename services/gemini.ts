@@ -1,13 +1,13 @@
+
 import { GoogleGenAI, Type } from "@google/genai";
 
-// Helper to get Gemini AI instance
+// Helper to get Gemini AI instance following guidelines
 const getAI = () => {
-  // process.env.API_KEY is defined in vite.config.ts
-  const apiKey = process.env.API_KEY;
-  if (!apiKey) {
-    console.error("API Key is missing! Please set it in Vercel Environment Variables.");
+  const key = process.env.API_KEY;
+  if (!key) {
+    console.error("Gemini API Key is missing! Please set API_KEY in environment variables.");
   }
-  return new GoogleGenAI({ apiKey: apiKey || '' });
+  return new GoogleGenAI({ apiKey: key || '' });
 };
 
 export const studyService = {
@@ -16,7 +16,7 @@ export const studyService = {
     try {
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
-        contents: [{ parts: [{ text: `Explain "${topic}" in simple Bengali for a ${level} level student. Include a definition, an example, and key points.` }] }],
+        contents: `Explain "${topic}" in simple Bengali for a ${level} level student. Include a definition, an example, and key points.`,
       });
       return response.text || "উত্তর পাওয়া যায়নি।";
     } catch (e) {
@@ -48,14 +48,18 @@ export const studyService = {
   async solveMath(problem: string) {
     const ai = getAI();
     try {
+      // Using gemini-3-flash-preview for faster response on Vercel/Client
       const response = await ai.models.generateContent({
-        model: 'gemini-3-pro-preview',
-        contents: [{ parts: [{ text: `Solve this math problem step-by-step in Bengali: ${problem}. No LaTeX/symbols.` }] }],
+        model: 'gemini-3-flash-preview',
+        contents: `Solve this math problem step-by-step in Bengali. Show clearly: 1. Given info, 2. Formula (if any), 3. Steps, 4. Final Answer. Problem: ${problem}. Avoid complex symbols, keep it simple.`,
+        config: {
+          thinkingConfig: { thinkingBudget: 0 } // Disable for speed, or set > 0 for pro
+        }
       });
       return response.text?.replace(/\$/g, '') || "সমাধান মেলেনি।";
     } catch (e) {
-      console.error(e);
-      return "অংকটি সমাধান করা সম্ভব হচ্ছে না।";
+      console.error("Math Solve Error:", e);
+      return "অংকটি সমাধান করা সম্ভব হচ্ছে না। সম্ভবত ইন্টারনেটে সমস্যা হচ্ছে।";
     }
   },
 
@@ -64,18 +68,18 @@ export const studyService = {
     const cleanBase64 = base64Image.split(',')[1] || base64Image;
     try {
       const response = await ai.models.generateContent({
-        model: 'gemini-3-pro-preview',
+        model: 'gemini-3-flash-preview',
         contents: {
           parts: [
             { inlineData: { mimeType: 'image/jpeg', data: cleanBase64 } },
-            { text: "Solve the math problem in this image step-by-step in Bengali." }
+            { text: "Solve the math problem in this image step-by-step in Bengali. Provide clear explanation for each step." }
           ]
         },
       });
       return response.text?.replace(/\$/g, '') || "অংকটি শনাক্ত করা যায়নি।";
     } catch (e) {
-      console.error(e);
-      return "ছবি থেকে অংক সমাধান করা সম্ভব হয়নি।";
+      console.error("Image Math Error:", e);
+      return "ছবি থেকে অংক সমাধান করা সম্ভব হয়নি। ছবির মান পরীক্ষা করো।";
     }
   },
 
@@ -85,7 +89,7 @@ export const studyService = {
     try {
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
-        contents: [{ parts: [{ text: `Translate to ${target}: "${text}". Provide JSON output with translation, pronunciation, and explanation in Bengali.` }] }],
+        contents: `Translate to ${target}: "${text}". Provide JSON output with translation, pronunciation, and explanation in Bengali.`,
         config: {
           responseMimeType: "application/json",
           responseSchema: {
@@ -144,7 +148,7 @@ export const studyService = {
     try {
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
-        contents: [{ parts: [{ text: `Check English grammar: "${sentence}". Return JSON {isValid, correction, feedback in Bengali}.` }] }],
+        contents: `Check English grammar: "${sentence}". Return JSON {isValid, correction, feedback in Bengali}.`,
         config: { 
           responseMimeType: "application/json",
           responseSchema: {
@@ -170,7 +174,7 @@ export const studyService = {
     try {
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
-        contents: [{ parts: [{ text: `Check spelling for ${language}: "${text}". Return JSON {original, corrected, differences, explanation in Bengali}.` }] }],
+        contents: `Check spelling for ${language}: "${text}". Return JSON {original, corrected, differences, explanation in Bengali}.`,
         config: { 
           responseMimeType: "application/json",
           responseSchema: {
@@ -230,7 +234,7 @@ export const studyService = {
     try {
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
-        contents: [{ parts: [{ text: `Answer briefly in Bengali: "${question}"` }] }],
+        contents: `Answer briefly in Bengali: "${question}"`,
       });
       return response.text || "উত্তর পাওয়া যায়নি।";
     } catch (e) {
@@ -271,7 +275,8 @@ export const studyService = {
     try {
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
-        contents: [{ parts: [{ text: message }] }],
+        // Pass complete conversation history for context
+        contents: [...history, { role: 'user', parts: [{ text: message }] }],
         config: { systemInstruction: sys },
       });
       return response.text || "দুঃখিত বন্ধু, আমি বুঝতে পারিনি।";
@@ -286,7 +291,7 @@ export const studyService = {
     try {
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
-        contents: [{ parts: [{ text: `Generate a script for "${topic}" in ${language === 'bn' ? 'Bengali' : 'English'}. Include structure and speaker parts if applicable.` }] }],
+        contents: `Generate a script for "${topic}" in ${language === 'bn' ? 'Bengali' : 'English'}. Include structure and speaker parts if applicable.`,
       });
       return response.text || "স্ক্রিপ্ট তৈরি করা যায়নি।";
     } catch (e) {

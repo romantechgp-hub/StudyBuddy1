@@ -5,6 +5,7 @@ const AdminBioBanner: React.FC = () => {
   const [settings, setSettings] = useState({
     adminName: 'রিমন মাহমুদ রোমান',
     adminEmail: 'romantechgp@gmail.com',
+    adminTagLine: 'অ্যাডমিন ও ডেভেলপার',
     adminBio: 'প্রতিটি শিশু যেন সহজে AI ব্যবহার করতে পারে তার জন্য এই ক্ষুদ্র প্রয়াস।',
     adminImage: ''
   });
@@ -13,12 +14,16 @@ const AdminBioBanner: React.FC = () => {
     const loadSettings = () => {
       const saved = localStorage.getItem('global_settings');
       if (saved) {
-        setSettings(JSON.parse(saved));
+        setSettings(prev => ({ ...prev, ...JSON.parse(saved) }));
       }
     };
     loadSettings();
     window.addEventListener('storage', loadSettings);
-    return () => window.removeEventListener('storage', loadSettings);
+    window.addEventListener('local-storage-update', loadSettings);
+    return () => {
+      window.removeEventListener('storage', loadSettings);
+      window.removeEventListener('local-storage-update', loadSettings);
+    };
   }, []);
 
   return (
@@ -43,7 +48,7 @@ const AdminBioBanner: React.FC = () => {
           
           <div className="flex-grow text-center md:text-left space-y-3">
             <div className="space-y-0.5">
-              <span className="text-[9px] font-black text-indigo-500 uppercase tracking-[0.2em]">অ্যাডমিন ও ডেভেলপার</span>
+              <span className="text-[9px] font-black text-indigo-500 uppercase tracking-[0.2em]">{settings.adminTagLine}</span>
               <h3 className="text-xl sm:text-2xl font-black text-slate-800 tracking-tight">{settings.adminName}</h3>
             </div>
             
