@@ -5,12 +5,13 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   define: {
-    // Ensuring process.env is handled safely for Vercel production builds
-    'process.env.API_KEY': JSON.stringify(process.env.API_KEY || ''),
-    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'production')
+    // Explicitly define process.env for the client-side code
+    // This allows the Gemini API to use process.env.API_KEY as required by guidelines
+    'process.env.API_KEY': JSON.stringify(process.env.API_KEY),
+    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'production'),
   },
   server: {
-    port: 3000
+    port: 3000,
   },
   build: {
     outDir: 'dist',
@@ -20,9 +21,9 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          'vendor': ['react', 'react-dom', '@google/genai']
-        }
-      }
-    }
-  }
+          'vendor': ['react', 'react-dom', '@google/genai'],
+        },
+      },
+    },
+  },
 });

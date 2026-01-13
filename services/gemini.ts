@@ -1,14 +1,9 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
 
-// Helper to get Gemini AI instance following guidelines
-const getAI = () => {
-  const key = process.env.API_KEY;
-  if (!key) {
-    console.error("Gemini API Key is missing! Please set API_KEY in environment variables.");
-  }
-  return new GoogleGenAI({ apiKey: key || '' });
-};
+// Strictly follow the guideline: Always use new GoogleGenAI({apiKey: process.env.API_KEY})
+// process.env.API_KEY is injected by Vite's define config
+const getAI = () => new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
 
 export const studyService = {
   async explainTopic(topic: string, level: 'basic' | 'standard') {
@@ -48,18 +43,18 @@ export const studyService = {
   async solveMath(problem: string) {
     const ai = getAI();
     try {
-      // Using gemini-3-flash-preview for faster response on Vercel/Client
+      // Guideline: Use gemini-3-pro-preview for complex reasoning/math
       const response = await ai.models.generateContent({
-        model: 'gemini-3-flash-preview',
+        model: 'gemini-3-pro-preview',
         contents: `Solve this math problem step-by-step in Bengali. Show clearly: 1. Given info, 2. Formula (if any), 3. Steps, 4. Final Answer. Problem: ${problem}. Avoid complex symbols, keep it simple.`,
         config: {
-          thinkingConfig: { thinkingBudget: 0 } // Disable for speed, or set > 0 for pro
+          thinkingConfig: { thinkingBudget: 2000 } // Allow some thinking budget for pro math
         }
       });
       return response.text?.replace(/\$/g, '') || "সমাধান মেলেনি।";
     } catch (e) {
       console.error("Math Solve Error:", e);
-      return "অংকটি সমাধান করা সম্ভব হচ্ছে না। সম্ভবত ইন্টারনেটে সমস্যা হচ্ছে।";
+      return "অংকটি সমাধান করা সম্ভব হচ্ছে না। সম্ভবত ইন্টারনেটে সমস্যা হচ্ছে বা এপিআই কি কাজ করছে না।";
     }
   },
 
@@ -68,18 +63,21 @@ export const studyService = {
     const cleanBase64 = base64Image.split(',')[1] || base64Image;
     try {
       const response = await ai.models.generateContent({
-        model: 'gemini-3-flash-preview',
+        model: 'gemini-3-pro-preview',
         contents: {
           parts: [
             { inlineData: { mimeType: 'image/jpeg', data: cleanBase64 } },
             { text: "Solve the math problem in this image step-by-step in Bengali. Provide clear explanation for each step." }
           ]
         },
+        config: {
+          thinkingConfig: { thinkingBudget: 2000 }
+        }
       });
       return response.text?.replace(/\$/g, '') || "অংকটি শনাক্ত করা যায়নি।";
     } catch (e) {
       console.error("Image Math Error:", e);
-      return "ছবি থেকে অংক সমাধান করা সম্ভব হয়নি। ছবির মান পরীক্ষা করো।";
+      return "ছবি থেকে অংক সমাধান করা সম্ভব হয়নি। ছবির সাইজ বা মান পরীক্ষা করো।";
     }
   },
 
@@ -275,7 +273,6 @@ export const studyService = {
     try {
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
-        // Pass complete conversation history for context
         contents: [...history, { role: 'user', parts: [{ text: message }] }],
         config: { systemInstruction: sys },
       });
