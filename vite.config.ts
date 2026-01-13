@@ -5,9 +5,8 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   define: {
-    // Explicitly define process.env for the client-side code
-    // This allows the Gemini API to use process.env.API_KEY as required by guidelines
-    'process.env.API_KEY': JSON.stringify(process.env.API_KEY),
+    // Vercel-এ বিল্ড টাইমে API_KEY ইনজেক্ট করা নিশ্চিত করে
+    'process.env.API_KEY': JSON.stringify(process.env.API_KEY || ''),
     'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'production'),
   },
   server: {

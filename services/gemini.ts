@@ -8,13 +8,13 @@ import { GoogleGenAI, Type } from "@google/genai";
 const getAI = () => {
   const apiKey = process.env.API_KEY;
   if (!apiKey) {
-    console.warn("API_KEY is not defined. Please set it in your environment variables.");
+    console.error("Critical: API_KEY is missing. Check Vercel Environment Variables.");
   }
   return new GoogleGenAI({ apiKey: apiKey || '' });
 };
 
 export const studyService = {
-  // সাধারণ টপিক বোঝানোর জন্য Flash মডেল
+  // সহজ পড়া মোড: দ্রুত রেসপন্সের জন্য Flash মডেল
   async explainTopic(topic: string, level: 'basic' | 'standard') {
     const ai = getAI();
     try {
@@ -24,7 +24,7 @@ export const studyService = {
       });
       return response.text || "উত্তর পাওয়া যায়নি।";
     } catch (e) {
-      console.error("Gemini Error:", e);
+      console.error("Study Mode Error:", e);
       return "সার্ভারে সমস্যা হচ্ছে, দয়া করে আবার চেষ্টা করো।";
     }
   },
@@ -44,26 +44,26 @@ export const studyService = {
       });
       return response.text || "ছবিটি বোঝা যাচ্ছে না।";
     } catch (e) {
-      console.error(e);
+      console.error("Study Image Error:", e);
       return "ছবি বিশ্লেষণে সমস্যা হয়েছে।";
     }
   },
 
-  // অংক সমাধানের জন্য Pro মডেল (Complex Reasoning)
+  // অংক সমাধানকারী: জটিল লজিকের জন্য Pro মডেল
   async solveMath(problem: string) {
     const ai = getAI();
     try {
       const response = await ai.models.generateContent({
         model: 'gemini-3-pro-preview',
-        contents: `Solve this math problem step-by-step in Bengali. Show clearly: 1. Given info, 2. Formula (if any), 3. Steps, 4. Final Answer. Problem: ${problem}. Keep it simple and student-friendly.`,
+        contents: `Solve this math problem step-by-step in Bengali. Show clearly: 1. Given info, 2. Formula, 3. Steps, 4. Final Answer. Problem: ${problem}. Keep it simple for students.`,
         config: {
-          thinkingConfig: { thinkingBudget: 1000 } // অংকের জন্য কিছুটা থিংকিং বাজেট রাখা হয়েছে
+          thinkingConfig: { thinkingBudget: 2000 } // অংকের জন্য থিংকিং বাজেট রাখা হয়েছে
         }
       });
       return response.text?.replace(/\$/g, '') || "সমাধান মেলেনি।";
     } catch (e) {
       console.error("Math Solve Error:", e);
-      return "অংকটি সমাধান করা সম্ভব হচ্ছে না। সম্ভবত এপিআই কি কাজ করছে না বা অংকটি অনেক বেশি জটিল।";
+      return "অংকটি সমাধান করা সম্ভব হচ্ছে না। সম্ভবত এপিআই কী-তে সমস্যা অথবা অংকটি অনেক জটিল।";
     }
   },
 
@@ -76,27 +76,28 @@ export const studyService = {
         contents: {
           parts: [
             { inlineData: { mimeType: 'image/jpeg', data: cleanBase64 } },
-            { text: "Solve the math problem in this image step-by-step in Bengali. Provide clear explanation for each step." }
+            { text: "Identify and solve the math problem in this image step-by-step in Bengali. Provide clear explanation." }
           ]
         },
         config: {
-          thinkingConfig: { thinkingBudget: 1000 }
+          thinkingConfig: { thinkingBudget: 2000 }
         }
       });
       return response.text?.replace(/\$/g, '') || "অংকটি শনাক্ত করা যায়নি।";
     } catch (e) {
-      console.error("Image Math Error:", e);
-      return "ছবি থেকে অংক সমাধান করা সম্ভব হয়নি। ছবির সাইজ কমিয়ে চেষ্টা করো।";
+      console.error("Math Image Error:", e);
+      return "ছবি থেকে অংক সমাধান করা সম্ভব হয়নি। ছবির সাইজ বা রেজোলিউশন পরীক্ষা করো।";
     }
   },
 
+  // অনুবাদ ও স্পিকিং: দ্রুত কাজ করার জন্য Flash মডেল
   async translateAndPronounce(text: string, direction: 'bn-en' | 'en-bn') {
     const ai = getAI();
     const target = direction === 'bn-en' ? 'English' : 'Bengali';
     try {
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
-        contents: `Translate to ${target}: "${text}". Provide JSON output with translation, pronunciation, and explanation in Bengali.`,
+        contents: `Translate to ${target}: "${text}". Return JSON with translation, pronunciation, and explanation in Bengali.`,
         config: {
           responseMimeType: "application/json",
           responseSchema: {
@@ -112,7 +113,7 @@ export const studyService = {
       });
       return JSON.parse(response.text || '{}');
     } catch (e) {
-      console.error(e);
+      console.error("Translation Error:", e);
       throw e;
     }
   },
@@ -145,8 +146,43 @@ export const studyService = {
       });
       return JSON.parse(response.text || '{}');
     } catch (e) {
-      console.error(e);
+      console.error("Translation Image Error:", e);
       throw e;
+    }
+  },
+
+  // প্রশ্ন ও উত্তর: Flash মডেল
+  async askQuestion(question: string) {
+    const ai = getAI();
+    try {
+      const response = await ai.models.generateContent({
+        model: 'gemini-3-flash-preview',
+        contents: `Answer briefly in Bengali: "${question}"`,
+      });
+      return response.text || "উত্তর পাওয়া যায়নি।";
+    } catch (e) {
+      console.error("QA Error:", e);
+      return "উত্তর দিতে সমস্যা হচ্ছে। দয়া করে পরে চেষ্টা করো।";
+    }
+  },
+
+  async askQuestionWithImage(base64Image: string) {
+    const ai = getAI();
+    const cleanBase64 = base64Image.split(',')[1] || base64Image;
+    try {
+      const response = await ai.models.generateContent({
+        model: 'gemini-3-flash-preview',
+        contents: {
+          parts: [
+            { inlineData: { mimeType: 'image/jpeg', data: cleanBase64 } },
+            { text: "Identify the question in this image and answer it briefly in Bengali." }
+          ]
+        },
+      });
+      return response.text || "উত্তর পাওয়া যায়নি।";
+    } catch (e) {
+      console.error("QA Image Error:", e);
+      return "ছবি থেকে উত্তর বের করা সম্ভব হয়নি।";
     }
   },
 
@@ -236,40 +272,6 @@ export const studyService = {
     }
   },
 
-  async askQuestion(question: string) {
-    const ai = getAI();
-    try {
-      const response = await ai.models.generateContent({
-        model: 'gemini-3-flash-preview',
-        contents: `Answer briefly in Bengali: "${question}"`,
-      });
-      return response.text || "উত্তর পাওয়া যায়নি।";
-    } catch (e) {
-      console.error(e);
-      return "উত্তর পাওয়া যায়নি।";
-    }
-  },
-
-  async askQuestionWithImage(base64Image: string) {
-    const ai = getAI();
-    const cleanBase64 = base64Image.split(',')[1] || base64Image;
-    try {
-      const response = await ai.models.generateContent({
-        model: 'gemini-3-flash-preview',
-        contents: {
-          parts: [
-            { inlineData: { mimeType: 'image/jpeg', data: cleanBase64 } },
-            { text: "Answer the question in this image briefly in Bengali." }
-          ]
-        },
-      });
-      return response.text || "উত্তর পাওয়া যায়নি।";
-    } catch (e) {
-      console.error(e);
-      return "ছবি থেকে উত্তর বের করা সম্ভব হয়নি।";
-    }
-  },
-
   async chatWithFriend(history: any[], message: string) {
     const ai = getAI();
     const saved = localStorage.getItem('global_settings');
@@ -288,7 +290,7 @@ export const studyService = {
       return response.text || "দুঃখিত বন্ধু, আমি বুঝতে পারিনি।";
     } catch (e) {
       console.error(e);
-      return "দুঃখিত বন্ধু, ইন্টারনেটে সমস্যা হচ্ছে। আবার চেষ্টা করো!";
+      return "দুঃখিত বন্ধু, ইন্টারনেটে সমস্যা হচ্ছে।";
     }
   },
 
@@ -297,7 +299,7 @@ export const studyService = {
     try {
       const response = await ai.models.generateContent({
         model: 'gemini-3-flash-preview',
-        contents: `Generate a script for "${topic}" in ${language === 'bn' ? 'Bengali' : 'English'}. Include structure and speaker parts if applicable.`,
+        contents: `Generate a script for "${topic}" in ${language === 'bn' ? 'Bengali' : 'English'}.`,
       });
       return response.text || "স্ক্রিপ্ট তৈরি করা যায়নি।";
     } catch (e) {
