@@ -4,25 +4,20 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   define: {
-    // Ensuring process.env is available for the build
     'process.env.API_KEY': JSON.stringify(process.env.API_KEY || ''),
     'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'production')
   },
   build: {
     outDir: 'dist',
-    chunkSizeWarningLimit: 3000,
+    emptyOutDir: true,
+    sourcemap: false,
+    chunkSizeWarningLimit: 2000,
     rollupOptions: {
       output: {
         manualChunks: {
-          'vendor-react': ['react', 'react-dom'],
-          'vendor-genai': ['@google/genai'],
-          'vendor-utils': ['react-easy-crop']
+          'vendor': ['react', 'react-dom', '@google/genai']
         }
       }
     }
-  },
-  server: {
-    port: 3000,
-    host: true
   }
 });
