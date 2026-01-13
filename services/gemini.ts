@@ -1,13 +1,16 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 
 // Helper to get Gemini AI instance
 const getAI = () => {
-  return new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+  // process.env.API_KEY is defined in vite.config.ts
+  const apiKey = process.env.API_KEY;
+  if (!apiKey) {
+    console.error("API Key is missing! Please set it in Vercel Environment Variables.");
+  }
+  return new GoogleGenAI({ apiKey: apiKey || '' });
 };
 
 export const studyService = {
-  // Explains a topic in simple Bengali
   async explainTopic(topic: string, level: 'basic' | 'standard') {
     const ai = getAI();
     try {
@@ -17,12 +20,11 @@ export const studyService = {
       });
       return response.text || "উত্তর পাওয়া যায়নি।";
     } catch (e) {
-      console.error(e);
+      console.error("Gemini Error:", e);
       return "সার্ভারে সমস্যা হচ্ছে, দয়া করে আবার চেষ্টা করো।";
     }
   },
 
-  // Identifies and explains an image in Bengali
   async explainTopicWithImage(base64Image: string, level: 'basic' | 'standard') {
     const ai = getAI();
     const cleanBase64 = base64Image.split(',')[1] || base64Image;
@@ -38,11 +40,11 @@ export const studyService = {
       });
       return response.text || "ছবিটি বোঝা যাচ্ছে না।";
     } catch (e) {
+      console.error(e);
       return "ছবি বিশ্লেষণে সমস্যা হয়েছে।";
     }
   },
 
-  // Solves math problems step-by-step
   async solveMath(problem: string) {
     const ai = getAI();
     try {
@@ -52,11 +54,11 @@ export const studyService = {
       });
       return response.text?.replace(/\$/g, '') || "সমাধান মেলেনি।";
     } catch (e) {
+      console.error(e);
       return "অংকটি সমাধান করা সম্ভব হচ্ছে না।";
     }
   },
 
-  // Solves math problems from an image
   async solveMathWithImage(base64Image: string) {
     const ai = getAI();
     const cleanBase64 = base64Image.split(',')[1] || base64Image;
@@ -72,11 +74,11 @@ export const studyService = {
       });
       return response.text?.replace(/\$/g, '') || "অংকটি শনাক্ত করা যায়নি।";
     } catch (e) {
+      console.error(e);
       return "ছবি থেকে অংক সমাধান করা সম্ভব হয়নি।";
     }
   },
 
-  // Translates text and provides pronunciation guide
   async translateAndPronounce(text: string, direction: 'bn-en' | 'en-bn') {
     const ai = getAI();
     const target = direction === 'bn-en' ? 'English' : 'Bengali';
@@ -99,11 +101,11 @@ export const studyService = {
       });
       return JSON.parse(response.text || '{}');
     } catch (e) {
+      console.error(e);
       throw e;
     }
   },
 
-  // Translates text from an image
   async translateAndPronounceWithImage(base64Image: string, direction: 'bn-en' | 'en-bn') {
     const ai = getAI();
     const cleanBase64 = base64Image.split(',')[1] || base64Image;
@@ -132,11 +134,11 @@ export const studyService = {
       });
       return JSON.parse(response.text || '{}');
     } catch (e) {
+      console.error(e);
       throw e;
     }
   },
 
-  // Validates English grammar
   async validateEnglishSentence(sentence: string) {
     const ai = getAI();
     try {
@@ -158,11 +160,11 @@ export const studyService = {
       });
       return JSON.parse(response.text || '{}');
     } catch (e) {
+      console.error(e);
       throw e;
     }
   },
 
-  // Checks spelling and returns corrections
   async checkSpelling(text: string, language: 'bn' | 'en') {
     const ai = getAI();
     try {
@@ -185,11 +187,11 @@ export const studyService = {
       });
       return JSON.parse(response.text || '{}');
     } catch (e) {
+      console.error(e);
       throw e;
     }
   },
 
-  // Checks spelling from an image
   async checkSpellingWithImage(base64Image: string, language: 'bn' | 'en') {
     const ai = getAI();
     const cleanBase64 = base64Image.split(',')[1] || base64Image;
@@ -218,11 +220,11 @@ export const studyService = {
       });
       return JSON.parse(response.text || '{}');
     } catch (e) {
+      console.error(e);
       throw e;
     }
   },
 
-  // Answers a brief question in Bengali
   async askQuestion(question: string) {
     const ai = getAI();
     try {
@@ -230,13 +232,13 @@ export const studyService = {
         model: 'gemini-3-flash-preview',
         contents: [{ parts: [{ text: `Answer briefly in Bengali: "${question}"` }] }],
       });
-      return response.text;
+      return response.text || "উত্তর পাওয়া যায়নি।";
     } catch (e) {
+      console.error(e);
       return "উত্তর পাওয়া যায়নি।";
     }
   },
 
-  // Answers a question based on an image
   async askQuestionWithImage(base64Image: string) {
     const ai = getAI();
     const cleanBase64 = base64Image.split(',')[1] || base64Image;
@@ -252,11 +254,11 @@ export const studyService = {
       });
       return response.text || "উত্তর পাওয়া যায়নি।";
     } catch (e) {
+      console.error(e);
       return "ছবি থেকে উত্তর বের করা সম্ভব হয়নি।";
     }
   },
 
-  // AI Tutor chat with history and system instruction
   async chatWithFriend(history: any[], message: string) {
     const ai = getAI();
     const saved = localStorage.getItem('global_settings');
@@ -272,13 +274,13 @@ export const studyService = {
         contents: [{ parts: [{ text: message }] }],
         config: { systemInstruction: sys },
       });
-      return response.text;
+      return response.text || "দুঃখিত বন্ধু, আমি বুঝতে পারিনি।";
     } catch (e) {
+      console.error(e);
       return "দুঃখিত বন্ধু, ইন্টারনেটে সমস্যা হচ্ছে। আবার চেষ্টা করো!";
     }
   },
 
-  // Generates a structured script for a given topic
   async generateScript(topic: string, language: 'bn' | 'en') {
     const ai = getAI();
     try {

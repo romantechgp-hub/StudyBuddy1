@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   define: {
-    // Vite explicitly replaces these during build
+    // Ensuring process.env is available for the build
     'process.env.API_KEY': JSON.stringify(process.env.API_KEY || ''),
     'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'production')
   },
@@ -20,5 +20,9 @@ export default defineConfig({
         }
       }
     }
+  },
+  server: {
+    port: 3000,
+    host: true
   }
 });
