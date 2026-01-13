@@ -1,11 +1,20 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
 
-// Strictly follow the guideline: Always use new GoogleGenAI({apiKey: process.env.API_KEY})
-// process.env.API_KEY is injected by Vite's define config
-const getAI = () => new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+/**
+ * গাইডলাইন অনুযায়ী API Key সরাসরি process.env.API_KEY থেকে নেওয়া হচ্ছে।
+ * Vite Config-এ এটি ইনজেক্ট করা আছে।
+ */
+const getAI = () => {
+  const apiKey = process.env.API_KEY;
+  if (!apiKey) {
+    console.warn("API_KEY is not defined. Please set it in your environment variables.");
+  }
+  return new GoogleGenAI({ apiKey: apiKey || '' });
+};
 
 export const studyService = {
+  // সাধারণ টপিক বোঝানোর জন্য Flash মডেল
   async explainTopic(topic: string, level: 'basic' | 'standard') {
     const ai = getAI();
     try {
@@ -40,21 +49,21 @@ export const studyService = {
     }
   },
 
+  // অংক সমাধানের জন্য Pro মডেল (Complex Reasoning)
   async solveMath(problem: string) {
     const ai = getAI();
     try {
-      // Guideline: Use gemini-3-pro-preview for complex reasoning/math
       const response = await ai.models.generateContent({
         model: 'gemini-3-pro-preview',
-        contents: `Solve this math problem step-by-step in Bengali. Show clearly: 1. Given info, 2. Formula (if any), 3. Steps, 4. Final Answer. Problem: ${problem}. Avoid complex symbols, keep it simple.`,
+        contents: `Solve this math problem step-by-step in Bengali. Show clearly: 1. Given info, 2. Formula (if any), 3. Steps, 4. Final Answer. Problem: ${problem}. Keep it simple and student-friendly.`,
         config: {
-          thinkingConfig: { thinkingBudget: 2000 } // Allow some thinking budget for pro math
+          thinkingConfig: { thinkingBudget: 1000 } // অংকের জন্য কিছুটা থিংকিং বাজেট রাখা হয়েছে
         }
       });
       return response.text?.replace(/\$/g, '') || "সমাধান মেলেনি।";
     } catch (e) {
       console.error("Math Solve Error:", e);
-      return "অংকটি সমাধান করা সম্ভব হচ্ছে না। সম্ভবত ইন্টারনেটে সমস্যা হচ্ছে বা এপিআই কি কাজ করছে না।";
+      return "অংকটি সমাধান করা সম্ভব হচ্ছে না। সম্ভবত এপিআই কি কাজ করছে না বা অংকটি অনেক বেশি জটিল।";
     }
   },
 
@@ -71,13 +80,13 @@ export const studyService = {
           ]
         },
         config: {
-          thinkingConfig: { thinkingBudget: 2000 }
+          thinkingConfig: { thinkingBudget: 1000 }
         }
       });
       return response.text?.replace(/\$/g, '') || "অংকটি শনাক্ত করা যায়নি।";
     } catch (e) {
       console.error("Image Math Error:", e);
-      return "ছবি থেকে অংক সমাধান করা সম্ভব হয়নি। ছবির সাইজ বা মান পরীক্ষা করো।";
+      return "ছবি থেকে অংক সমাধান করা সম্ভব হয়নি। ছবির সাইজ কমিয়ে চেষ্টা করো।";
     }
   },
 
