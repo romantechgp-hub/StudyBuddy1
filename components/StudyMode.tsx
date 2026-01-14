@@ -12,7 +12,6 @@ const StudyMode: React.FC<StudyModeProps> = ({ onBack }) => {
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [cropperSrc, setCropperSrc] = useState<string | null>(null);
   const [level, setLevel] = useState<'basic' | 'standard'>('standard');
-  const [mode, setMode] = useState<'brief' | 'detailed'>('detailed');
   const [result, setResult] = useState('');
   const [loading, setLoading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
@@ -25,9 +24,9 @@ const StudyMode: React.FC<StudyModeProps> = ({ onBack }) => {
     try {
       let explanation = '';
       if (capturedImage) {
-        explanation = await studyService.explainTopicWithImage(capturedImage, level, mode);
+        explanation = await studyService.explainTopicWithImage(capturedImage, level);
       } else {
-        explanation = await studyService.explainTopic(topic, level, mode);
+        explanation = await studyService.explainTopic(topic, level);
       }
       setResult(explanation || '');
     } catch (error) {
@@ -102,10 +101,6 @@ const StudyMode: React.FC<StudyModeProps> = ({ onBack }) => {
               <span className="text-xs font-bold text-slate-600">সাধারণ</span>
             </label>
           </div>
-          <div className="flex bg-white p-1 rounded-xl shadow-sm border border-slate-100">
-            <button onClick={() => setMode('brief')} className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${mode === 'brief' ? 'bg-indigo-600 text-white' : 'text-slate-400'}`}>সংক্ষিপ্ত</button>
-            <button onClick={() => setMode('detailed')} className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${mode === 'detailed' ? 'bg-indigo-600 text-white' : 'text-slate-400'}`}>বিস্তারিত</button>
-          </div>
         </div>
 
         <button onClick={handleExplain} disabled={loading || (!topic.trim() && !capturedImage)} className="w-full bg-indigo-600 text-white h-16 rounded-2xl font-black text-lg hover:bg-indigo-700 shadow-xl transition-all disabled:opacity-50">
@@ -114,7 +109,7 @@ const StudyMode: React.FC<StudyModeProps> = ({ onBack }) => {
 
         {result && (
           <div className="mt-8 p-6 bg-blue-50/50 rounded-[2.5rem] border border-blue-100 animate-in zoom-in duration-500">
-            <h4 className="font-black text-blue-800 flex items-center gap-2 mb-4"><span>💡</span> ব্যাখ্যা ({mode === 'brief' ? 'সংক্ষিপ্ত' : 'বিস্তারিত'}):</h4>
+            <h4 className="font-black text-blue-800 flex items-center gap-2 mb-4"><span>💡</span> ব্যাখ্যা:</h4>
             <div className="whitespace-pre-wrap text-slate-700 leading-relaxed font-medium bg-white p-6 rounded-2xl border border-blue-50 shadow-inner text-sm">{result}</div>
           </div>
         )}

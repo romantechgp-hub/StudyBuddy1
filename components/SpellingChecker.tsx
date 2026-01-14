@@ -12,7 +12,6 @@ const SpellingChecker: React.FC<SpellingCheckerProps> = ({ onBack }) => {
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [cropperSrc, setCropperSrc] = useState<string | null>(null);
   const [language, setLanguage] = useState<'bn' | 'en'>('bn');
-  const [mode, setMode] = useState<'brief' | 'detailed'>('detailed');
   const [result, setResult] = useState<{ original: string, corrected: string, differences: string, explanation: string } | null>(null);
   const [loading, setLoading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
@@ -25,9 +24,9 @@ const SpellingChecker: React.FC<SpellingCheckerProps> = ({ onBack }) => {
     try {
       let res;
       if (capturedImage) {
-        res = await studyService.checkSpellingWithImage(capturedImage, language, mode);
+        res = await studyService.checkSpellingWithImage(capturedImage, language);
       } else {
-        res = await studyService.checkSpelling(text, language, mode);
+        res = await studyService.checkSpelling(text, language);
       }
       setResult(res);
     } catch (error) {
@@ -53,7 +52,6 @@ const SpellingChecker: React.FC<SpellingCheckerProps> = ({ onBack }) => {
   };
 
   const startListening = () => {
-    // Fixed typo: webkitRecognition -> webkitSpeechRecognition
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) return;
     const recognition = new SpeechRecognition();
@@ -71,17 +69,11 @@ const SpellingChecker: React.FC<SpellingCheckerProps> = ({ onBack }) => {
     <div className="max-w-3xl mx-auto space-y-8 animate-in fade-in slide-in-from-top-4 duration-700">
       {cropperSrc && <ImageCropper image={cropperSrc} aspect={1.5} onCropComplete={onCropComplete} onCancel={() => setCropperSrc(null)} />}
       <div className="bg-white rounded-[2.5rem] p-6 sm:p-12 shadow-xl border border-slate-50">
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <button onClick={onBack} className="w-12 h-12 bg-slate-50 hover:bg-slate-100 rounded-2xl flex items-center justify-center text-slate-400">←</button>
-            <div>
-              <h2 className="text-xl sm:text-2xl font-black text-slate-800 tracking-tight">বানান সংশোধন</h2>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">ভাষা ও বানান সংশোধন</p>
-            </div>
-          </div>
-          <div className="flex bg-slate-100 p-1 rounded-xl shadow-sm">
-            <button onClick={() => setMode('brief')} className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${mode === 'brief' ? 'bg-amber-600 text-white' : 'text-slate-400'}`}>সংক্ষিপ্ত</button>
-            <button onClick={() => setMode('detailed')} className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${mode === 'detailed' ? 'bg-amber-600 text-white' : 'text-slate-400'}`}>বিস্তারিত</button>
+        <div className="flex items-center gap-4 mb-8">
+          <button onClick={onBack} className="w-12 h-12 bg-slate-50 hover:bg-slate-100 rounded-2xl flex items-center justify-center text-slate-400">←</button>
+          <div>
+            <h2 className="text-xl sm:text-2xl font-black text-slate-800 tracking-tight">বানান সংশোধন</h2>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">ভাষা ও বানান সংশোধন</p>
           </div>
         </div>
 
@@ -111,7 +103,7 @@ const SpellingChecker: React.FC<SpellingCheckerProps> = ({ onBack }) => {
               <div className="p-6 bg-green-50 rounded-[2.5rem] border border-green-100 shadow-sm">
                 <p className="text-[10px] font-black text-green-600 uppercase tracking-widest mb-2">সঠিক বাক্য:</p>
                 <p className="text-lg font-black text-slate-800 leading-relaxed bg-white/50 p-6 rounded-2xl border border-green-100 shadow-inner">{result.corrected}</p>
-                {result.differences && mode === 'detailed' && (
+                {result.differences && (
                   <div className="pt-4 border-t border-green-200 mt-6">
                     <p className="text-[10px] font-black text-green-600 uppercase tracking-widest mb-1">সংশোধন:</p>
                     <p className="text-sm font-bold text-slate-600">{result.differences}</p>
@@ -120,7 +112,7 @@ const SpellingChecker: React.FC<SpellingCheckerProps> = ({ onBack }) => {
               </div>
               {result.explanation && (
                 <div className="p-6 bg-blue-50 rounded-[2.5rem] border border-blue-100 shadow-sm">
-                  <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-2">ব্যাখ্যা ({mode === 'brief' ? 'সংক্ষিপ্ত' : 'বিস্তারিত'}):</p>
+                  <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-2">ব্যাখ্যা:</p>
                   <p className="text-sm font-bold text-slate-600 leading-relaxed">{result.explanation}</p>
                 </div>
               )}

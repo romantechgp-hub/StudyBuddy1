@@ -11,7 +11,6 @@ const MathSolver: React.FC<MathSolverProps> = ({ onBack }) => {
   const [problem, setProblem] = useState('');
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [cropperSrc, setCropperSrc] = useState<string | null>(null);
-  const [mode, setMode] = useState<'brief' | 'detailed'>('detailed');
   const [result, setResult] = useState('');
   const [loading, setLoading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
@@ -24,9 +23,9 @@ const MathSolver: React.FC<MathSolverProps> = ({ onBack }) => {
     try {
       let solution = '';
       if (capturedImage) {
-        solution = await studyService.solveMathWithImage(capturedImage, mode);
+        solution = await studyService.solveMathWithImage(capturedImage);
       } else {
-        solution = await studyService.solveMath(problem, mode);
+        solution = await studyService.solveMath(problem);
       }
       setResult(solution || '');
     } catch (error) {
@@ -76,10 +75,6 @@ const MathSolver: React.FC<MathSolverProps> = ({ onBack }) => {
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Math Solver</p>
           </div>
         </div>
-        <div className="flex bg-slate-100 p-1 rounded-xl shadow-sm">
-          <button onClick={() => setMode('brief')} className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${mode === 'brief' ? 'bg-emerald-600 text-white' : 'text-slate-400'}`}>সংক্ষিপ্ত</button>
-          <button onClick={() => setMode('detailed')} className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${mode === 'detailed' ? 'bg-emerald-600 text-white' : 'text-slate-400'}`}>বিস্তারিত</button>
-        </div>
       </div>
 
       <div className="space-y-6">
@@ -100,7 +95,7 @@ const MathSolver: React.FC<MathSolverProps> = ({ onBack }) => {
 
         {result && (
           <div className="mt-8 space-y-4 animate-in zoom-in duration-500">
-            <h4 className="text-sm font-black text-emerald-700 uppercase tracking-widest">সমাধান ({mode === 'brief' ? 'সংক্ষিপ্ত' : 'বিস্তারিত'}):</h4>
+            <h4 className="text-sm font-black text-emerald-700 uppercase tracking-widest">সমাধান:</h4>
             <div style={{ fontFamily: 'system-ui, -apple-system, sans-serif, "Hind Siliguri"' }} className="whitespace-pre-wrap text-slate-800 leading-relaxed font-semibold bg-white p-6 sm:p-10 rounded-[2rem] border-2 border-emerald-50 shadow-inner text-sm">
               {result}
             </div>
