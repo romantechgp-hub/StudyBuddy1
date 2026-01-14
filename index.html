@@ -6,17 +6,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>StudyBuddy Talk</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
-            /* Prioritize standard sans-serif for numbers/English to fix "1" visibility on mobile */
-            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, 'Hind Siliguri';
+            /* Priority: Inter for numbers/English, Hind Siliguri for Bengali */
+            font-family: 'Inter', 'Hind Siliguri', sans-serif;
             background-color: #f3f4f6;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
         }
-        /* Ensure digits are always clear */
-        input, textarea, button, .math-text {
+        /* Extra clarity for numbers */
+        .math-text, .result-box, input, textarea {
+            font-family: 'Inter', sans-serif !important;
             font-variant-numeric: tabular-nums;
         }
         ::-webkit-scrollbar { width: 6px; }
