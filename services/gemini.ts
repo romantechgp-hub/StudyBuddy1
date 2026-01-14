@@ -307,7 +307,7 @@ export const studyService = {
         contents: [...history, { role: 'user', parts: [{ text: message }] }],
         config: { systemInstruction: sys },
       });
-      return response.text || "দুঃখিত বন্ধু, আমি বুঝতে পারিনি।";
+      return response.text || "দুঃখিত বন্ধু, আমি বুঝতে পারিনি। আবার বলো তো!";
     } catch (e) {
       return "দুঃখিত বন্ধু, ইন্টারনেটে সমস্যা হচ্ছে।";
     }
