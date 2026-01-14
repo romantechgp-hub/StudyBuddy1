@@ -49,13 +49,15 @@ export const studyService = {
     }
   },
 
-  // অংক সমাধানকারী: জটিল লজিকের জন্য Pro মডেল
+  // অংক সমাধানকারী: Vercel-এ টাইমআউট এড়াতে Flash মডেল ব্যবহার করা হচ্ছে
   async solveMath(problem: string) {
     const ai = getAI();
     try {
       const response = await ai.models.generateContent({
-        model: 'gemini-3-pro-preview',
+        model: 'gemini-3-flash-preview',
         contents: `You are an expert Math Tutor. Solve the following problem step-by-step in Bengali.
+        IMPORTANT: Do not use any LaTeX symbols like $, \[, or \]. Use plain text and simple numbers.
+        
         Structure:
         1. দেওয়া আছে (Given info)
         2. সূত্র (Formula)
@@ -64,14 +66,11 @@ export const studyService = {
         
         Problem: ${problem}
         Keep the explanation very clear for a student.`,
-        config: {
-          thinkingConfig: { thinkingBudget: 16000 } // Increased budget for complex math reasoning
-        }
       });
-      return response.text?.replace(/\$/g, '') || "সমাধান মেলেনি।";
+      return response.text || "সমাধান মেলেনি।";
     } catch (e) {
       console.error("Math Solve Error:", e);
-      return "অংকটি সমাধান করা সম্ভব হচ্ছে না। সম্ভবত এপিআই কী-তে সমস্যা অথবা অংকটি অনেক জটিল।";
+      return "অংকটি সমাধান করা সম্ভব হচ্ছে না। দয়া করে আবার চেষ্টা করো।";
     }
   },
 
@@ -80,27 +79,24 @@ export const studyService = {
     const cleanBase64 = base64Image.split(',')[1] || base64Image;
     try {
       const response = await ai.models.generateContent({
-        model: 'gemini-3-pro-preview',
+        model: 'gemini-3-flash-preview',
         contents: {
           parts: [
             { inlineData: { mimeType: 'image/jpeg', data: cleanBase64 } },
             { text: `You are an expert Math Tutor. Identify the math problem in this image and solve it step-by-step in Bengali.
+            IMPORTANT: Do not use any LaTeX symbols like $, \[, or \]. Use plain text and simple numbers.
+            
             Structure:
             1. ছবিতে যা দেখা যাচ্ছে (Observation)
             2. সমাধান প্রক্রিয়া (Step-by-step calculation)
-            3. উত্তর (Final Answer)
-            
-            Keep the explanation very clear and detailed.` }
+            3. উত্তর (Final Answer)` }
           ]
-        },
-        config: {
-          thinkingConfig: { thinkingBudget: 16000 }
         }
       });
-      return response.text?.replace(/\$/g, '') || "অংকটি শনাক্ত করা যায়নি।";
+      return response.text || "অংকটি শনাক্ত করা যায়নি।";
     } catch (e) {
       console.error("Math Image Error:", e);
-      return "ছবি থেকে অংক সমাধান করা সম্ভব হয়নি। ছবির সাইজ বা রেজোলিউশন পরীক্ষা করো।";
+      return "ছবি থেকে অংক সমাধান করা সম্ভব হয়নি।";
     }
   },
 
