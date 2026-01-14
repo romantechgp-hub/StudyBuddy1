@@ -11,6 +11,7 @@ const MathSolver: React.FC<MathSolverProps> = ({ onBack }) => {
   const [problem, setProblem] = useState('');
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [cropperSrc, setCropperSrc] = useState<string | null>(null);
+  const [mode, setMode] = useState<'brief' | 'detailed'>('detailed');
   const [result, setResult] = useState('');
   const [loading, setLoading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
@@ -23,9 +24,9 @@ const MathSolver: React.FC<MathSolverProps> = ({ onBack }) => {
     try {
       let solution = '';
       if (capturedImage) {
-        solution = await studyService.solveMathWithImage(capturedImage);
+        solution = await studyService.solveMathWithImage(capturedImage, mode);
       } else {
-        solution = await studyService.solveMath(problem);
+        solution = await studyService.solveMath(problem, mode);
       }
       setResult(solution || '');
     } catch (error) {
@@ -74,6 +75,10 @@ const MathSolver: React.FC<MathSolverProps> = ({ onBack }) => {
             <h2 className="text-lg sm:text-2xl font-black text-slate-800 tracking-tight">অংক সমাধানকারী</h2>
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Math Solver</p>
           </div>
+        </div>
+        <div className="flex bg-slate-100 p-1 rounded-xl">
+          <button onClick={() => setMode('brief')} className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase transition-all ${mode === 'brief' ? 'bg-emerald-600 text-white' : 'text-slate-400'}`}>সংক্ষিপ্ত</button>
+          <button onClick={() => setMode('detailed')} className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase transition-all ${mode === 'detailed' ? 'bg-emerald-600 text-white' : 'text-slate-400'}`}>বিস্তারিত</button>
         </div>
       </div>
 

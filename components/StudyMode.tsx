@@ -12,6 +12,7 @@ const StudyMode: React.FC<StudyModeProps> = ({ onBack }) => {
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [cropperSrc, setCropperSrc] = useState<string | null>(null);
   const [level, setLevel] = useState<'basic' | 'standard'>('standard');
+  const [mode, setMode] = useState<'brief' | 'detailed'>('detailed');
   const [result, setResult] = useState('');
   const [loading, setLoading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
@@ -24,9 +25,9 @@ const StudyMode: React.FC<StudyModeProps> = ({ onBack }) => {
     try {
       let explanation = '';
       if (capturedImage) {
-        explanation = await studyService.explainTopicWithImage(capturedImage, level);
+        explanation = await studyService.explainTopicWithImage(capturedImage, level, mode);
       } else {
-        explanation = await studyService.explainTopic(topic, level);
+        explanation = await studyService.explainTopic(topic, level, mode);
       }
       setResult(explanation || '');
     } catch (error) {
@@ -40,9 +41,7 @@ const StudyMode: React.FC<StudyModeProps> = ({ onBack }) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setCropperSrc(reader.result as string);
-      };
+      reader.onloadend = () => setCropperSrc(reader.result as string);
       reader.readAsDataURL(file);
     }
   };
@@ -100,6 +99,10 @@ const StudyMode: React.FC<StudyModeProps> = ({ onBack }) => {
               <input type="radio" checked={level === 'standard'} onChange={() => setLevel('standard')} className="accent-indigo-600" />
               <span className="text-xs font-bold text-slate-600">সাধারণ</span>
             </label>
+          </div>
+          <div className="flex bg-white p-1 rounded-xl shadow-sm border border-slate-100">
+            <button onClick={() => setMode('brief')} className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${mode === 'brief' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-slate-600'}`}>সংক্ষিপ্ত</button>
+            <button onClick={() => setMode('detailed')} className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${mode === 'detailed' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-slate-600'}`}>বিস্তারিত</button>
           </div>
         </div>
 

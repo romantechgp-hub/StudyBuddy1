@@ -10,6 +10,7 @@ interface SpeakingHelperProps {
 const SpeakingHelper: React.FC<SpeakingHelperProps> = ({ onBack }) => {
   const [text, setText] = useState('');
   const [direction, setDirection] = useState<'bn-en' | 'en-bn'>('bn-en');
+  const [mode, setMode] = useState<'brief' | 'detailed'>('detailed');
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [cropperSrc, setCropperSrc] = useState<string | null>(null);
   const [result, setResult] = useState<{ translation: string, pronunciation: string, explanation?: string } | null>(null);
@@ -25,9 +26,9 @@ const SpeakingHelper: React.FC<SpeakingHelperProps> = ({ onBack }) => {
     try {
       let res;
       if (capturedImage) {
-        res = await studyService.translateAndPronounceWithImage(capturedImage, direction);
+        res = await studyService.translateAndPronounceWithImage(capturedImage, direction, mode);
       } else {
-        res = await studyService.translateAndPronounce(text, direction);
+        res = await studyService.translateAndPronounce(text, direction, mode);
       }
       setResult(res);
     } catch (error) {
@@ -78,11 +79,17 @@ const SpeakingHelper: React.FC<SpeakingHelperProps> = ({ onBack }) => {
   return (
     <div className="bg-white rounded-[2.5rem] p-6 sm:p-8 shadow-xl border border-slate-100 max-w-3xl mx-auto">
       {cropperSrc && <ImageCropper image={cropperSrc} aspect={1.5} onCropComplete={onCropComplete} onCancel={() => setCropperSrc(null)} />}
-      <div className="flex items-center gap-4 mb-8">
-        <button onClick={onBack} className="w-10 h-10 bg-slate-50 hover:bg-slate-100 rounded-xl flex items-center justify-center text-slate-400">←</button>
-        <div>
-          <h2 className="text-xl sm:text-2xl font-black text-slate-800 tracking-tight">অনুবাদ ও স্পিকিং</h2>
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">ভাষা শেখা সহজ</p>
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-4">
+          <button onClick={onBack} className="w-10 h-10 bg-slate-50 hover:bg-slate-100 rounded-xl flex items-center justify-center text-slate-400">←</button>
+          <div>
+            <h2 className="text-xl sm:text-2xl font-black text-slate-800 tracking-tight">অনুবাদ ও স্পিকিং</h2>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">ভাষা শেখা সহজ</p>
+          </div>
+        </div>
+        <div className="flex bg-slate-50 p-1 rounded-xl">
+            <button onClick={() => setMode('brief')} className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase transition-all ${mode === 'brief' ? 'bg-purple-600 text-white' : 'text-slate-400'}`}>সংক্ষিপ্ত</button>
+            <button onClick={() => setMode('detailed')} className={`px-4 py-1.5 rounded-lg text-[9px] font-black uppercase transition-all ${mode === 'detailed' ? 'bg-purple-600 text-white' : 'text-slate-400'}`}>বিস্তারিত</button>
         </div>
       </div>
 
