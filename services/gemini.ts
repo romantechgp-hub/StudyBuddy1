@@ -47,12 +47,12 @@ export const studyService = {
     }
   },
 
-  // অংক সমাধানকারী: Pro মডেল ব্যবহার করা হচ্ছে উন্নত গাণিতিক যুক্তির জন্য
+  // অংক সমাধানকারী: Flash মডেল ব্যবহার করা হচ্ছে ভেরসেল স্ট্যাবিলিটির জন্য
   async solveMath(problem: string) {
     const ai = getAI();
     try {
       const response = await ai.models.generateContent({
-        model: 'gemini-3-pro-preview',
+        model: 'gemini-3-flash-preview',
         contents: `You are an expert Math Tutor. Solve the following problem in Bengali. 
         IMPORTANT RULES:
         1. ${NUMERAL_INSTRUCTION} 
@@ -71,7 +71,7 @@ export const studyService = {
     const cleanBase64 = base64Image.split(',')[1] || base64Image;
     try {
       const response = await ai.models.generateContent({
-        model: 'gemini-3-pro-preview',
+        model: 'gemini-3-flash-preview',
         contents: {
           parts: [
             { inlineData: { mimeType: 'image/jpeg', data: cleanBase64 } },
