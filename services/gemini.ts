@@ -55,9 +55,17 @@ export const studyService = {
     try {
       const response = await ai.models.generateContent({
         model: 'gemini-3-pro-preview',
-        contents: `Solve this math problem step-by-step in Bengali. Show clearly: 1. Given info, 2. Formula, 3. Steps, 4. Final Answer. Problem: ${problem}. Keep it simple for students.`,
+        contents: `You are an expert Math Tutor. Solve the following problem step-by-step in Bengali.
+        Structure:
+        1. দেওয়া আছে (Given info)
+        2. সূত্র (Formula)
+        3. সমাধান প্রক্রিয়া (Step-by-step calculation)
+        4. উত্তর (Final Answer)
+        
+        Problem: ${problem}
+        Keep the explanation very clear for a student.`,
         config: {
-          thinkingConfig: { thinkingBudget: 2000 } // অংকের জন্য থিংকিং বাজেট রাখা হয়েছে
+          thinkingConfig: { thinkingBudget: 16000 } // Increased budget for complex math reasoning
         }
       });
       return response.text?.replace(/\$/g, '') || "সমাধান মেলেনি।";
@@ -76,11 +84,17 @@ export const studyService = {
         contents: {
           parts: [
             { inlineData: { mimeType: 'image/jpeg', data: cleanBase64 } },
-            { text: "Identify and solve the math problem in this image step-by-step in Bengali. Provide clear explanation." }
+            { text: `You are an expert Math Tutor. Identify the math problem in this image and solve it step-by-step in Bengali.
+            Structure:
+            1. ছবিতে যা দেখা যাচ্ছে (Observation)
+            2. সমাধান প্রক্রিয়া (Step-by-step calculation)
+            3. উত্তর (Final Answer)
+            
+            Keep the explanation very clear and detailed.` }
           ]
         },
         config: {
-          thinkingConfig: { thinkingBudget: 2000 }
+          thinkingConfig: { thinkingBudget: 16000 }
         }
       });
       return response.text?.replace(/\$/g, '') || "অংকটি শনাক্ত করা যায়নি।";

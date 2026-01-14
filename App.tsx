@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { View, UserProfile } from './types';
 import Header from './components/Header';
@@ -43,7 +44,11 @@ const App: React.FC = () => {
     loadUserFromStorage();
     
     const session = localStorage.getItem('studybuddy_session_id');
-    setCurrentView(session ? View.HOME : View.LOGIN);
+    const initialView = session ? View.HOME : View.LOGIN;
+    setCurrentView(initialView);
+    
+    // Ensure there is an initial state in history
+    window.history.replaceState({ view: initialView }, '', '');
 
     const handlePopState = (event: PopStateEvent) => {
       if (event.state && event.state.view) {
